@@ -17,5 +17,5 @@ DISBIN=$ROOT/$DISDIR/lib/ida
 # force compilation
 LIMBOFLAGS= -c $LIMBOFLAGS
 
-idatab.dis:	idatab.dist
-	cp idatab.dist idatab.dis
+# idatab.dist is idatab.b compiled for 32-bit words, and of no use where
+# they are 64 bits: compile the table like everything else.
