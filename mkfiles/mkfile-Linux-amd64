@@ -34,3 +34,8 @@ YFLAGS=		-d
 #	Dis object files for 64-bit words are kept apart from the 32-bit ones
 DISDIR=		dis64
 ACMEDIR=	acme64
+
+#	The compilers and other utilities for native kernels have not been
+#	made to build as 64-bit programs: build just mk, and use those built
+#	for Linux/386 (which run here) for the rest.
+UTILDIRS=	utils/libregexp utils/mk

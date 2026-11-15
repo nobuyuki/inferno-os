@@ -31,6 +31,11 @@ KERNEL_DIRS=\
 	os\
 	os/boot/pc\
 
+# utilities (compilers and so on) and tools, built after the rest
+UTILDIRS=\
+	utils\
+	tools\
+
 # mkconfig is included at this point to allow it to override
 #the preceding declarations (particularly KERNEL_DIRS) if need be
 
@@ -67,7 +72,7 @@ nukedist:V: nuke
 	rm -f $ROOT/$OBJDIR/lib/lib*.a
 	
 &-Posix:QV:
-	for j in $DIRS utils tools
+	for j in $DIRS $UTILDIRS
 	do
 		echo "(cd $j; mk $MKFLAGS $stem)"
 		(cd $j; mk $MKFLAGS $stem) || exit 1

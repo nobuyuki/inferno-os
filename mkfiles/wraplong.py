@@ -5,7 +5,8 @@ import sys, os, re
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 inc = re.compile(r'^\s*#\s*include\s*([<"])([^>"]+)[>"]')
 def local(name, q, d):
-    for p in (d, root+'/include', root+'/Linux/amd64/include', root+'/libinterp', root+'/emu/port', root+'/emu/Linux'):
+    for p in (d, root+'/include', root+'/Linux/amd64/include', root+'/libinterp', root+'/emu/port', root+'/emu/Linux',
+              root+'/utils/include', os.path.join(d, '..', 'cc'), os.path.join(d, '..', 'ld'), os.path.join(d, '..', 'include')):
         if os.path.exists(os.path.join(p, name)):
             return True
     return False
