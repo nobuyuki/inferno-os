@@ -17,7 +17,7 @@ include "bufio.m";
 stderr: ref Sys->FD;
 stdout: ref Iobuf;
 
-hasht := array[97] of (int, array of int);
+hasht := array[97] of (int, array of big);
 
 Stackv: module {
 	init: fn(ctxt: ref Draw->Context, argv: list of string);
@@ -425,7 +425,7 @@ indent(n: int)
 		stdout.putc('\t');
 }
 
-ref2int(v: string): int
+ref2int(v: string): big
 {
 	if(v == nil)
 		error("bad empty value for ref");
@@ -443,16 +443,16 @@ ref2int(v: string): int
 			i += 3;
 		}
 	}
-	if(n - i > 8)
-		error("64-bit pointers?");
-	p := 0;
+	if(n - i > 16)
+		error("bad value for ref: "+v);
+	p := big 0;
 	for(; i < n; i++){
 		c := v[i];
 		case c {
 		'0' to '9' =>
-			p = (p << 4) + (c - '0');
+			p = (p << 4) + big (c - '0');
 		'a' to 'f' =>
-			p = (p << 4) + (c - 'a' + 10);
+			p = (p << 4) + big (c - 'a' + 10);
 		* =>
 			error("bad value for ref: "+v);
 		}
@@ -476,9 +476,9 @@ pref(v: string): int
 
 # hash table implementation that tries to be reasonably
 # parsimonious on memory usage.
-addref(v: int): int
+addref(v: big): int
 {
-	slot := (v & 16r7fffffff) % len hasht;
+	slot := int (v & big 16r7fffffff) % len hasht;
 	(n, a) := hasht[slot];
 	for(i := 0; i < n; i++)
 		if(a[i] == v)
@@ -486,7 +486,7 @@ addref(v: int): int
 	if(n == len a){
 		if(n == 0)
 			n = 3;
-		t := array[n*3/2] of int;
+		t := array[n*3/2] of big;
 		t[0:] = a;
 		hasht[slot].t1 = t;
 		a = t;
