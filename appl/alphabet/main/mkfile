@@ -9,6 +9,7 @@ TARG=\
 	export.dis\
 	fd.dis\
 	filter.dis\
+	genfilter.dis\
 	mount.dis\
 	par.dis\
 	parse.dis\
