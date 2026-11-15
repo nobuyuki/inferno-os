@@ -222,6 +222,7 @@ delprog(Prog *p, char *msg)
 	Osenv *o;
 	Prog **ph;
 
+	memgone();		/* what it leaves might be needed at once */
 	tellsomeone(p, msg);	/* call before being removed from prog list */
 
 	o = p->osenv;
@@ -1008,6 +1009,32 @@ disfault(void *reg, char *msg)
 	error(msg);
 }
 
+/*
+ * the incremental collector has fallen behind programs that
+ * allocate quickly, and the heap is nearly full: collect all
+ * there is to collect now, rather than let an allocation fail
+ */
+static void
+gcfull(void)
+{
+	int done, pass;
+
+	gcbusy++;
+	up->type = BusyGC;
+	pushrun(up->prog);
+	done = gccolor+3;
+	pass = 0;
+	while(gccolor < done && gcruns()) {
+		rungc(isched.head);
+		if((++pass&0xFF) == 0)
+			sched();	/* let the other kernel processes in */
+	}
+	up->type = Interp;
+	delrunq(up->prog);
+	gcnew = 0;
+	gclimit = memroom(1);
+}
+
 void
 vmachine(void*)
 {
@@ -1035,6 +1062,9 @@ vmachine(void*)
 			execatidle();
 			sleep(&isched.irend, tready, 0);
 		}
+
+		if(up->iprog == nil && memhigh())
+			gcfull();
 
 		if(isched.vmq != nil && (isched.runhd == nil || ++cycles > 2)){
 			iyield();
@@ -1066,6 +1096,9 @@ vmachine(void*)
 				rungc(isched.head);
 				up->type = Interp;
 				delrunq(up->prog);
+				/* the allocator stops a program that gets as far as the mark */
+				gcnew = 0;
+				gclimit = memroom(0);
 			} else
 				print("up->iprog not nil (%lux)\n", up->iprog);
 		}
