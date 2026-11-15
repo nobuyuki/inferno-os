@@ -311,7 +311,7 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 			break;
 		case DEFW:
 			for(i = 0; i < n; i++) {
-				*(WORD*)si = disw(isp);
+				*(WORD*)si = (int)disw(isp);	/* sign-extend */
 				si += sizeof(WORD);
 			}
 			break;

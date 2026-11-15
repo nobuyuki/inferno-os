@@ -8,7 +8,7 @@
 #define imark u.mark
 #define iline u.line
 
-#define	O(t, e)		((long)(&((t*)0)->e))
+#define	O(t, e)		((long)(uintptr)(&((t*)0)->e))
 
 static char* tktwincget(Tk*, char*, char**);
 static char* tktwinconfigure(Tk*, char*, char**);

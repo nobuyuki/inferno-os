@@ -43,7 +43,7 @@ extern	Pool*	heapmem;
 static	Ptrhash	*ptrtab[PTRHASH];
 static	Ptrhash	*ptrfree;
 
-#define	HASHPTR(p)	(((ulong)(p) >> 6) & (PTRHASH - 1))
+#define	HASHPTR(p)	(((uintptr)(p) >> 6) & (PTRHASH - 1))
 
 void
 ptradd(Heap *v)
@@ -282,7 +282,7 @@ domflag(Heap *h)
 	int i;
 	Module *m;
 
-	print("sweep h=0x%lux t=0x%lux c=%d", (ulong)h, (ulong)h->t, h->color);
+	print("sweep h=%p t=%p c=%d", h, h->t, h->color);
 	for(m = modules; m != nil; m = m->link) {
 		for(i = 0; i < m->ntype; i++) {
 			if(m->type[i] == h->t) {

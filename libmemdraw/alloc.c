@@ -86,7 +86,7 @@ allocmemimage(Rectangle r, ulong chan)
 		return nil;
 	}
 
-	md->base[0] = (ulong)md;
+	*(Memdata**)md->base = md;	/* the two words reserved hold a pointer of any size */
 	/* md->base[1] = getcallerpc(&r); */
 
 	/* if this changes, memimagemove must change too */
@@ -123,7 +123,7 @@ freememimage(Memimage *i)
 ulong*
 wordaddr(Memimage *i, Point p)
 {
-	return (ulong*) ((ulong)byteaddr(i, p) & ~(sizeof(ulong)-1));
+	return (ulong*) ((uintptr)byteaddr(i, p) & ~(uintptr)(sizeof(ulong)-1));
 }
 
 uchar*

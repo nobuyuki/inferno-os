@@ -3,7 +3,7 @@
 #include "tk.h"
 #include "label.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
+#define	O(t, e)		((long)(uintptr)(&((t*)0)->e))
 
 /* Widget Commands (+ means implemented)
 	+cget
@@ -661,7 +661,7 @@ tkbuttoninvoke(Tk *tk, char *arg, char **val)
 		return nil;
 	e = buttoninvoke(tk, val);
 	if (e == nil && tk->type == TKbutton && !(tk->flag & Tkactivated)) {
-		tkrepeat(tk, cancelinvoke, (void*)(tk->flag&Tkactive), InvokePause, 0);
+		tkrepeat(tk, cancelinvoke, (void*)(uintptr)(tk->flag&Tkactive), InvokePause, 0);
 		tk->flag |= Tkactivated | Tkactive;
 		tksettransparent(tk, istransparent(tk));
 		tk->dirty = tkrect(tk, 1);

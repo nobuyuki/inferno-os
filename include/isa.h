@@ -185,8 +185,10 @@ enum
 {
 	MAXDIS	= ISELF+1,
 
-	XMAGIC	= 819248,	/* Normal magic */
-	SMAGIC	= 923426,	/* Signed module */
+	XMAGIC32	= 819248,	/* Normal magic */
+	SMAGIC32	= 923426,	/* Signed module */
+	XMAGIC64	= 819264,	/* Normal magic, 64-bit words */
+	SMAGIC64	= 923464,	/* Signed module, 64-bit words */
 
 	AMP	= 0x00,		/* Src/Dst op addressing */
 	AFP	= 0x01,
@@ -223,7 +225,14 @@ enum
 	REGRET	= 4,
 	NREG	= 5,
 
-	IBY2WD	= 4,
+	/*
+	 * the word is the size of a pointer, so object files
+	 * differ for 32-bit and 64-bit machines: the offsets
+	 * in them depend on it.  They are told apart by the magic.
+	 */
+	IBY2WD	= sizeof(void*),
+	XMAGIC	= IBY2WD == 4? XMAGIC32: XMAGIC64,
+	SMAGIC	= IBY2WD == 4? SMAGIC32: SMAGIC64,
 	IBY2FT	= 8,
 	IBY2LG	= 8,
 

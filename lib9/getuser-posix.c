@@ -1,6 +1,9 @@
 #include "lib9.h"
+#pragma push_macro("long")
+#undef long
 #include <pwd.h>
 
+#pragma pop_macro("long")
 char*
 getuser(void)
 {

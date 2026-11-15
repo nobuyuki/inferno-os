@@ -17,6 +17,8 @@
 #include <draw.h>
 #include "cursor.h"
 #include "keyboard.h"
+#pragma push_macro("long")
+#undef long
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -39,6 +41,7 @@
 #include <X11/keysym.h>
 #include <X11/extensions/XShm.h>
 
+#pragma pop_macro("long")
 #include "keysym2ucs.h"
 
 #undef Colormap
@@ -53,9 +56,12 @@
 #undef Visual
 #undef Window
 
+#pragma push_macro("long")
+#undef long
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+#pragma pop_macro("long")
 static int displaydepth;
 extern ulong displaychan;
 

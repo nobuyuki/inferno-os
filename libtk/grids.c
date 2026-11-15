@@ -8,7 +8,7 @@
  * - grid columnconfigure/rowconfigure accepts a list of indexes?
  */
 
-#define	O(t, e)		((long)(&((t*)0)->e))
+#define	O(t, e)		((long)(uintptr)(&((t*)0)->e))
 
 typedef struct TkGridparam TkGridparam;
 typedef struct TkBeamparam TkBeamparam;

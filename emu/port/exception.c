@@ -104,7 +104,7 @@ handler(char *estr)
 	str = p->exval == H || D2H(p->exval)->t == &Tstring;
 	m = R.M;
 	if(m->compiled)
-		pc = (ulong)R.PC-(ulong)m->prog;
+		pc = (uintptr)R.PC-(uintptr)m->prog;
 	else
 		pc = R.PC-m->prog;
 	pc--;
@@ -140,7 +140,7 @@ handler(char *estr)
 		if(f->mr != nil)
 			m = f->mr;
 		if(m->compiled)
-			pc = (ulong)f->lr-(ulong)m->prog;
+			pc = (uintptr)f->lr-(uintptr)m->prog;
 		else
 			pc = f->lr-m->prog;
 		pc--;
@@ -203,7 +203,7 @@ found:
 		*eadr = p->exval;
 	}
 	if(m->compiled)
-		R.PC = (Inst*)((ulong)m->prog+newpc);
+		R.PC = (Inst*)((uintptr)m->prog+newpc);
 	else
 		R.PC = m->prog+newpc;
 	memmove(&p->R, &R, sizeof(R));

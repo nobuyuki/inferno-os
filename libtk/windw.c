@@ -581,8 +581,8 @@ tkdirtyfocusorder(TkTop *tkt)
 	tkt->nfocus = 0;
 }
 
-#define	O(t, e)		((long)(&((t*)0)->e))
-#define OA(t, e)	((long)(((t*)0)->e))
+#define	O(t, e)		((long)(uintptr)(&((t*)0)->e))
+#define OA(t, e)	((long)(uintptr)(((t*)0)->e))
 
 typedef struct TkSee TkSee;
 struct TkSee {

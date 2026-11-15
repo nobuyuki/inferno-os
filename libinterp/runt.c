@@ -24,7 +24,7 @@ xprint(Prog *xp, void *vfp, void *vva, String *s1, char *buf, int n)
 	Type *t;
 	double d;
 	String *ss;
-	ulong *ptr;
+	WORD *ptr;
 	uchar *fp, *va;
 	int nc, c, isbig, isr, sip;
 	char *b, *eb, *f, fmt[32];
@@ -71,7 +71,7 @@ xprint(Prog *xp, void *vfp, void *vva, String *s1, char *buf, int n)
 			case '*':
 				i = *(WORD*)va;
 				f--;
-				f += snprint(f, sizeof(fmt)-(f-fmt), "%d", i);
+				f += snprint(f, sizeof(fmt)-(f-fmt), "%d", (int)i);
 				va += IBY2WD;
 				continue;
 			case 'b':
@@ -135,7 +135,7 @@ xprint(Prog *xp, void *vfp, void *vva, String *s1, char *buf, int n)
 					/* always a unicode character */
 					if(c == 'c')
 						f[-1] = 'C';
-					b += snprint(b, eb-b, fmt, i);
+					b += snprint(b, eb-b, fmt, (int)i);
 					va += IBY2WD;
 				}
 				break;
@@ -144,14 +144,14 @@ xprint(Prog *xp, void *vfp, void *vva, String *s1, char *buf, int n)
 				break;
 /* Debugging formats - may disappear */
 			case 'H':
-				ptr = *(ulong**)va;
+				ptr = *(WORD**)va;
 				c = -1;
 				t = nil;
 				if(ptr != H) {
 					c = D2H(ptr)->ref;
 					t = D2H(ptr)->t;
 				}
-				b += snprint(b, eb-b, "%d.%.8lux", c, (ulong)t);
+				b += snprint(b, eb-b, "%d.%p", c, t);
 				va += IBY2WD;
 				break;
 			}

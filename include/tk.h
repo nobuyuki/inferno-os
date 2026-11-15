@@ -135,8 +135,8 @@ enum
 #define TKI2F(i)	((i)*Tkfpscalar)
 extern	int TKF2I(int);
 /*#define TKF2I(f)	(((f) + Tkfpscalar/2)/Tkfpscalar)*/
-#define IAUX(i)		((void*)i)
-#define AUXI(i)		((int)i)
+#define IAUX(i)		((void*)(uintptr)(i))
+#define AUXI(i)		((int)(uintptr)(i))
 #define TKKEY(i)	((i)&0xFFFF)
 
 typedef struct Tk Tk;

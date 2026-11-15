@@ -5,6 +5,8 @@
 #undef _POSIX_C_SOURCE 
 #undef getwd
 
+#pragma push_macro("long")
+#undef long
 #include	<unistd.h>
 #include	<signal.h>
 #include 	<pthread.h>
@@ -18,6 +20,7 @@
 #endif
 
 
+#pragma pop_macro("long")
 typedef struct Osdep Osdep;
 struct Osdep {
 	sem_t	sem;

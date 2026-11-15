@@ -1,6 +1,9 @@
 #include "lib9.h"
 
+#pragma push_macro("long")
+#undef long
 #include "freetype/freetype.h"
+#pragma pop_macro("long")
 #include "freetype.h"
 
 static char* fterrstr(int);
@@ -117,7 +120,10 @@ struct FTerr {
 #define FT_ERRORDEF_(l,c,t)	c,t,
 
 static FTerr fterrs[] = {
+#pragma push_macro("long")
+#undef long
 #include "freetype/fterrdef.h"
+#pragma pop_macro("long")
 	-1, "",
 };
 

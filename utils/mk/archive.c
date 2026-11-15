@@ -1,6 +1,9 @@
 #include	"mk.h"
+#pragma push_macro("long")
+#undef long
 #include	<ar.h>
 
+#pragma pop_macro("long")
 static int dolong;
 
 static void atimes(char *);

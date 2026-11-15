@@ -1,6 +1,17 @@
 typedef uchar		BYTE;		/* 8  bits */
+/*
+ * A WORD is the unit of Dis memory: it must be able to hold a
+ * pointer, since the virtual machine stores addresses in words.
+ * A Limbo int occupies a WORD but is always a 32-bit value;
+ * where WORD is wider, int is kept sign-extended in it.
+ */
+#if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 8
+typedef vlong		WORD;		/* 64 bits */
+typedef uvlong		UWORD;		/* 64 bits */
+#else
 typedef int		WORD;		/* 32 bits */
 typedef unsigned int	UWORD;		/* 32 bits */
+#endif
 typedef vlong		LONG;		/* 64 bits */
 typedef uvlong		ULONG;		/* 64 bits */
 typedef double		REAL;		/* 64 double IEEE754 */
@@ -169,8 +180,13 @@ union Adr
 	WORD	ind;
 	Inst*	ins;
 	struct {
+#if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 8
+		u32int	f;	/* First indirection */
+		u32int	s;	/* Second indirection */
+#else
 		ushort	f;	/* First indirection */	
 		ushort	s;	/* Second indirection */
+#endif
 	} i;
 };
 
@@ -191,8 +207,8 @@ struct Altc
 
 struct Alt
 {
-	int	nsend;
-	int	nrecv;
+	WORD	nsend;
+	WORD	nrecv;
 	Altc	ac[1];
 };
 
@@ -533,8 +549,8 @@ extern	String*		addstring(String*, String*, int);
 extern	int		brpatch(Inst*, Module*);
 extern	void		readimagemodinit(void);
 
-#define	O(t,e)		((long)(&((t*)0)->e))
-#define	OA(t,e)		((long)(((t*)0)->e))
+#define	O(t,e)		((long)(uintptr)(&((t*)0)->e))
+#define	OA(t,e)		((long)(uintptr)(((t*)0)->e))
 
 #pragma	varargck	type	"D"	Inst*
 #pragma varargck argpos errorf 1

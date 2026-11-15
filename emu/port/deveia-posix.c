@@ -5,9 +5,12 @@
 #include	"fns.h"
 #include	"error.h"
 #undef _POSIX_C_SOURCE       /* for deveia-bsd.c */
+#pragma push_macro("long")
+#undef long
 #include <sys/stat.h>
 #include	<termios.h>
 
+#pragma pop_macro("long")
 enum
 {
 	Devchar = 't',

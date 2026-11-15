@@ -334,7 +334,11 @@ _ifmt(Fmt *f)
 	vu = 0;
 	u = 0;
 	if(f->r == 'p'){
-		u = (ulong)va_arg(f->args, void*);
+		if(sizeof(void*) > sizeof(ulong)){
+			isv = 1;
+			vu = (uintptr)va_arg(f->args, void*);
+		}else
+			u = (uintptr)va_arg(f->args, void*);
 		f->r = 'x';
 		fl |= FmtUnsigned;
 	}else if(fl & FmtVLong){

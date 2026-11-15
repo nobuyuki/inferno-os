@@ -10,6 +10,14 @@ String	snil;			/* String known to be zero length */
 #define Stmp	*((WORD*)(R.FP+NREG*IBY2WD))
 #define Dtmp	*((WORD*)(R.FP+(NREG+2)*IBY2WD))
 
+/*
+ * Limbo's int is 32 bits, even when a WORD is 64 bits:
+ * the results of arithmetic are truncated and held sign-extended.
+ * Words that are only moved or compared can therefore hold addresses.
+ */
+#define I(x)	((WORD)(int)(x))
+#define IW(r)	((int)W(r))
+
 #define OP(fn)	void fn(void)
 #define B(r)	*((BYTE*)(R.r))
 #define W(r)	*((WORD*)(R.r))
@@ -45,22 +53,22 @@ OP(cvtws){ SH(d) = W(s); }
 OP(cvtsw){ W(d) = SH(s); }
 OP(cvtwf){ F(d) = W(s); }
 OP(addb) { B(d) = B(m) + B(s); }
-OP(addw) { W(d) = W(m) + W(s); }
+OP(addw) { W(d) = I(W(m) + W(s)); }
 OP(addl) { V(d) = V(m) + V(s); }
 OP(addf) { F(d) = F(m) + F(s); }
 OP(subb) { B(d) = B(m) - B(s); }
-OP(subw) { W(d) = W(m) - W(s); }
+OP(subw) { W(d) = I(W(m) - W(s)); }
 OP(subl) { V(d) = V(m) - V(s); }
 OP(subf) { F(d) = F(m) - F(s); }
 OP(divb) { B(d) = B(m) / B(s); }
-OP(divw) { W(d) = W(m) / W(s); }
+OP(divw) { W(d) = I(W(m) / W(s)); }
 OP(divl) { V(d) = V(m) / V(s); }
 OP(divf) { F(d) = F(m) / F(s); }
 OP(modb) { B(d) = B(m) % B(s); }
-OP(modw) { W(d) = W(m) % W(s); }
+OP(modw) { W(d) = I(W(m) % W(s)); }
 OP(modl) { V(d) = V(m) % V(s); }
 OP(mulb) { B(d) = B(m) * B(s); }
-OP(mulw) { W(d) = W(m) * W(s); }
+OP(mulw) { W(d) = I(W(m) * W(s)); }
 OP(mull) { V(d) = V(m) * V(s); }
 OP(mulf) { F(d) = F(m) * F(s); }
 OP(andb) { B(d) = B(m) & B(s); }
@@ -73,12 +81,12 @@ OP(orb)  { B(d) = B(m) | B(s); }
 OP(orw)  { W(d) = W(m) | W(s); }
 OP(orl)  { V(d) = V(m) | V(s); }
 OP(shlb) { B(d) = B(m) << W(s); }
-OP(shlw) { W(d) = W(m) << W(s); }
+OP(shlw) { W(d) = I(IW(m) << W(s)); }
 OP(shll) { V(d) = V(m) << W(s); }
 OP(shrb) { B(d) = B(m) >> W(s); }
-OP(shrw) { W(d) = W(m) >> W(s); }
+OP(shrw) { W(d) = I(IW(m) >> W(s)); }
 OP(shrl) { V(d) = V(m) >> W(s); }
-OP(lsrw) { W(d) = UW(m) >> W(s); }
+OP(lsrw) { W(d) = I((u32int)W(m) >> W(s)); }
 OP(lsrl) { V(d) = UV(m) >> W(s); }
 OP(beqb) { if(B(s) == B(m)) JMP(d); }
 OP(bneb) { if(B(s) != B(m)) JMP(d); }
@@ -112,7 +120,7 @@ OP(bgtc) { if(stringcmp(S(s), S(m)) >  0) JMP(d); }
 OP(bgec) { if(stringcmp(S(s), S(m)) >= 0) JMP(d); }
 OP(iexit){ error(""); }
 OP(cvtwl){ V(d) = W(s); }
-OP(cvtlw){ W(d) = V(s); }
+OP(cvtlw){ W(d) = I(V(s)); }
 OP(cvtlf){ F(d) = V(s); }
 OP(cvtfl)
 {
@@ -126,7 +134,7 @@ OP(cvtfw)
 	REAL f;
 
 	f = F(s);
-	W(d) = f < 0 ? f - .5 : f + .5;
+	W(d) = (int)(f < 0 ? f - .5 : f + .5);
 }
 OP(cvtcl)
 {
@@ -141,7 +149,7 @@ OP(cvtcl)
 OP(iexpw)
 {
 	int inv;
-	WORD x, n, r;
+	int x, n, r;
 
 	x = W(m);
 	n = W(s);
@@ -550,25 +558,29 @@ OP(casel)
 {
 	WORD *t, *l, d, n, n2;
 	LONG v;
+	/*
+	 * count, pad; then for each label two LONGs and a pc padded to two words
+	 */
+	enum { Pcoff = 2*IBY2LG/IBY2WD, Stride = Pcoff+2 };
 
 	v = V(s);
 	t = (WORD*)((WORD)R.d + 2*IBY2WD);
 	n = t[-2];
-	d = t[n*6];
+	d = t[n*Stride];
 
 	while(n > 0) {
 		n2 = n >> 1;
-		l = t + n2*6;
+		l = t + n2*Stride;
 		if(v < ((LONG*)l)[0]) {
 			n = n2;
 			continue;
 		}
 		if(v >= ((LONG*)l)[1]) {
-			t = l+6;
+			t = l+Stride;
 			n -= n2 + 1;
 			continue;
 		}
-		d = l[4];
+		d = l[Pcoff];
 		break;
 	}
 	if(R.M->compiled) {
@@ -1336,7 +1348,7 @@ OP(mulx)
 		r <<= p;
 	else
 		r >>= (-p);
-	W(d) = (WORD)r;
+	W(d) = (int)r;
 }
 OP(divx)
 {
@@ -1350,7 +1362,7 @@ OP(divx)
 	else
 		s >>= (-p);
 	s /= (LONG)W(s);
-	W(d) = (WORD)s;
+	W(d) = (int)s;
 }
 OP(cvtxx)
 {
@@ -1363,7 +1375,7 @@ OP(cvtxx)
 		r <<= p;
 	else
 		r >>= (-p);
-	W(d) = (WORD)r;
+	W(d) = (int)r;
 }
 OP(mulx0)
 {
@@ -1384,7 +1396,7 @@ OP(mulx0)
 	else
 		r >>= (-p);
 	r /= (LONG)a;
-	W(d) = (WORD)r;
+	W(d) = (int)r;
 }
 OP(divx0)
 {
@@ -1405,7 +1417,7 @@ OP(divx0)
 	else
 		s >>= (-p);
 	s /= (LONG)y;
-	W(d) = (WORD)s;
+	W(d) = (int)s;
 }
 OP(cvtxx0)
 {
@@ -1425,7 +1437,7 @@ OP(cvtxx0)
 	else
 		r >>= (-p);
 	r /= (LONG)a;
-	W(d) = (WORD)r;
+	W(d) = (int)r;
 }
 OP(mulx1)
 {
@@ -1463,7 +1475,7 @@ OP(mulx1)
 		r >>= (-p);
 	r += (LONG)v;
 	r /= (LONG)a;
-	W(d) = (WORD)r;
+	W(d) = (int)r;
 }
 OP(divx1)
 {
@@ -1499,7 +1511,7 @@ OP(divx1)
 	else
 		s >>= (-p);
 	s /= (LONG)y;
-	W(d) = (WORD)s + v;
+	W(d) = I((WORD)s + v);
 }
 OP(cvtxx1)
 {
@@ -1535,7 +1547,7 @@ OP(cvtxx1)
 		r >>= (-p);
 	r += (LONG)v;
 	r /= (LONG)a;
-	W(d) = (WORD)r;
+	W(d) = (int)r;
 }
 /*
 OP(cvtxx)
@@ -1544,7 +1556,7 @@ OP(cvtxx)
 
 	v = (REAL)W(s)*F(m);
 	v = v < 0 ? v-0.5: v+0.5;
-	W(d) = (WORD)v;
+	W(d) = (int)v;
 }
 */
 OP(cvtfx)
@@ -1553,7 +1565,7 @@ OP(cvtfx)
 
 	v = F(s)*F(m);
 	v = v < 0 ? v-0.5: v+0.5;
-	W(d) = (WORD)v;
+	W(d) = (int)v;
 }
 OP(cvtxf)
 {

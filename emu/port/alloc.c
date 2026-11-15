@@ -40,6 +40,19 @@ struct Pool
 
 void*	initbrk(ulong);
 
+/*
+ * A free block must hold a Bhdr with its tree pointers and a Btail,
+ * so the allocation quantum depends on the size of a pointer:
+ * 32 bytes with 32-bit pointers, 64 bytes with 64-bit ones.
+ * Words and pointers in the Dis heap are also twice the size
+ * on a 64-bit machine, so scale the default limits to match.
+ */
+enum
+{
+	Quanta	= sizeof(void*) == 8? 63: 31,
+	Scale	= sizeof(void*)/4
+};
+
 struct
 {
 	int	n;
@@ -48,9 +61,9 @@ struct
 } table = {
 	3,
 	{
-		{ "main",  0, 	32*1024*1024, 31,  512*1024, 0, 31*1024*1024 },
-		{ "heap",  1, 	32*1024*1024, 31,  512*1024, 0, 31*1024*1024 },
-		{ "image", 2,   64*1024*1024+256, 31, 4*1024*1024, 1, 63*1024*1024 },
+		{ "main",  0, 	Scale*32*1024*1024, Quanta,  512*1024, 0, Scale*31*1024*1024 },
+		{ "heap",  1, 	Scale*32*1024*1024, Quanta,  512*1024, 0, Scale*31*1024*1024 },
+		{ "image", 2,   64*1024*1024+256, Quanta, 4*1024*1024, 1, 63*1024*1024 },
 	}
 };
 
@@ -89,7 +102,7 @@ void	(*memmonitor)(int, ulong, ulong, ulong) = nil;
 
 #define CKLEAK	0
 int	ckleak;
-#define	ML(v, sz, pc)	if(CKLEAK && ckleak && v){ if(sz) fprint(2, "%lux %lux %lux\n", (ulong)v, (ulong)sz, (ulong)pc); else fprint(2, "%lux\n", (ulong)v); }
+#define	ML(v, sz, pc)	if(CKLEAK && ckleak && v){ if(sz) fprint(2, "%lux %lux %lux\n", (ulong)(uintptr)v, (ulong)sz, (ulong)pc); else fprint(2, "%lux\n", (ulong)(uintptr)v); }
 
 int
 memusehigh(void)
@@ -306,7 +319,7 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 				p->hw = p->cursize;
 			unlock(&p->l);
 			if(p->monitor)
-				MM(p->pnum, pc, (ulong)B2D(t), size);
+				MM(p->pnum, pc, (ulong)(uintptr)B2D(t), size);
 			return B2D(t);
 		}
 		if(size < t->size) {
@@ -326,7 +339,7 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 				p->hw = p->cursize;
 			unlock(&p->l);
 			if(p->monitor)
-				MM(p->pnum, pc, (ulong)B2D(q), size);
+				MM(p->pnum, pc, (ulong)(uintptr)B2D(q), size);
 			return B2D(q);
 		}
 		/* Split */
@@ -342,7 +355,7 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 			p->hw = p->cursize;
 		unlock(&p->l);
 		if(p->monitor)
-			MM(p->pnum, pc, (ulong)B2D(q), size);
+			MM(p->pnum, pc, (ulong)(uintptr)B2D(q), size);
 		return B2D(q);
 	}
 
@@ -393,7 +406,7 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 	}
 #else
 	/* Double alignment */
-	t = (Bhdr *)(((ulong)t + 7) & ~7);
+	t = (Bhdr *)(((uintptr)t + 7) & ~(uintptr)7);
 #endif
 	if(p->chain != nil && (char*)t-(char*)B2LIMIT(p->chain)-ldr == 0){
 		/* can merge chains */
@@ -438,7 +451,7 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 		p->hw = p->cursize;
 	unlock(&p->l);
 	if(p->monitor)
-		MM(p->pnum, pc, (ulong)B2D(t), size);
+		MM(p->pnum, pc, (ulong)(uintptr)B2D(t), size);
 	return B2D(t);
 }
 
@@ -460,7 +473,7 @@ poolfree(Pool *p, void *v)
 
 	D2B(b, v);
 	if(p->monitor)
-		MM(p->pnum|(1<<8), getcallerpc(&p), (ulong)v, b->size);
+		MM(p->pnum|(1<<8), getcallerpc(&p), (ulong)(uintptr)v, b->size);
 
 	lock(&p->l);
 	p->nfree++;
@@ -635,7 +648,7 @@ kmalloc(size_t size)
 			setrealloctag(v, 0);
 		}
 		memset(v, 0, size);
-		MM(0, getcallerpc(&size), (ulong)v, size);
+		MM(0, getcallerpc(&size), (ulong)(uintptr)v, size);
 	}
 	return v;
 }
@@ -656,7 +669,7 @@ malloc(size_t size)
 			setrealloctag(v, 0);
 		}
 		memset(v, 0, size);
-		MM(0, getcallerpc(&size), (ulong)v, size);
+		MM(0, getcallerpc(&size), (ulong)(uintptr)v, size);
 	} else 
 		print("malloc failed from %lux\n", getcallerpc(&size));
 	return v;
@@ -677,7 +690,7 @@ mallocz(ulong size, int clr)
 		}
 		if(clr)
 			memset(v, 0, size);
-		MM(0, getcallerpc(&size), (ulong)v, size);
+		MM(0, getcallerpc(&size), (ulong)(uintptr)v, size);
 	} else 
 		print("mallocz failed from %lux\n", getcallerpc(&size));
 	return v;
@@ -693,7 +706,7 @@ free(void *v)
 			v = (ulong*)v-Npadlong;
 		D2B(b, v);
 		ML(v, 0, 0);
-		MM(1<<8|0, getcallerpc(&v), (ulong)((ulong*)v+Npadlong), b->size);
+		MM(1<<8|0, getcallerpc(&v), (ulong)(uintptr)((ulong*)v+Npadlong), b->size);
 		poolfree(mainmem, v);
 	}
 }
@@ -901,7 +914,7 @@ corrupted(char *str, char *msg, Pool *p, Bhdr *b, void *v)
 {
 	print("%s(%p): pool %s CORRUPT: %s at %p'%lud(magic=%lux)\n",
 		str, v, p->name, msg, b, b->size, b->magic);
-	dumpvl("bad Bhdr", (ulong *)((ulong)b & ~3)-4, 10);
+	dumpvl("bad Bhdr", (ulong *)((uintptr)b & ~(uintptr)3)-4, 10);
 }
 
 static void
@@ -981,7 +994,7 @@ badchunk:
 			print(" is %s '%lux\n", fmsg, fsz);
 		else
 			print(" in %s at %p'%lux\n", fmsg, fb, fsz);
-		dumpvl("area", (ulong *)((ulong)v & ~3)-4, 20);
+		dumpvl("area", (ulong *)((uintptr)v & ~(uintptr)3)-4, 20);
 	}
 }
 

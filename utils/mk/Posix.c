@@ -1,10 +1,13 @@
 #include	"mk.h"
+#pragma push_macro("long")
+#undef long
 #include	<dirent.h>
 #include	<signal.h>
 #include	<sys/wait.h>
 #include	<utime.h>
 #include	<stdio.h>
 
+#pragma pop_macro("long")
 char 	*shell =	"/bin/sh";
 char 	*shellname =	"sh";
 

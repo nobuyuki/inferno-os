@@ -21,7 +21,7 @@ static char* tkttagraise(Tk*, char*, char**);
 static char* tkttagranges(Tk*, char*, char**);
 static char* tkttagremove(Tk*, char*, char**);
 
-#define	O(t, e)		((long)(&((t*)0)->e))
+#define	O(t, e)		((long)(uintptr)(&((t*)0)->e))
 
 #define TKTEO		(O(TkTtaginfo, env))
 static 

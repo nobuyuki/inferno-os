@@ -4,7 +4,7 @@
 #include "tk.h"
 #include "keyboard.h"
 
-#define	O(t, e)		((long)(&((t*)0)->e))
+#define	O(t, e)		((long)(uintptr)(&((t*)0)->e))
 
 typedef struct TkScale TkScale;
 struct TkScale

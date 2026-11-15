@@ -37,6 +37,9 @@
 #include "lib9.h"
 #include "kernel.h"
 
+/* the rest is written to FreeType's interfaces, which use the real long */
+#undef long
+
 /*#include <stdio.h>*/
 /*#include <stdlib.h>*/
 
@@ -156,7 +159,7 @@
 
   /* We use the macro STREAM_FD for convenience to extract the       */
   /* fd from a given FreeType stream object */
-#define STREAM_FD( stream )  ( (int)stream->descriptor.pointer )
+#define STREAM_FD( stream )  ( (int)(uintptr)stream->descriptor.pointer )
 #define CLOSED_FD	(void*)-1
 
 
@@ -244,7 +247,7 @@ FT_Stream_Open( FT_Stream stream, const char*  filepathname)
 	stream->size = dir->length;
 	free(dir);
 
-	stream->descriptor.pointer = (void*)file;
+	stream->descriptor.pointer = (void*)(uintptr)file;
 	stream->pathname.pointer = (char*)filepathname;
 	stream->pos = 0;
 

@@ -7,6 +7,8 @@
 #include	"fns.h"
 #include	"error.h"
 
+#pragma push_macro("long")
+#undef long
 #include	<sys/types.h>
 #include	<sys/stat.h>
 #include	<fcntl.h>
@@ -21,6 +23,7 @@
 #include	<pwd.h>
 #include	<grp.h>
 
+#pragma pop_macro("long")
 typedef struct Fsinfo Fsinfo;
 struct Fsinfo
 {

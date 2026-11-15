@@ -2216,7 +2216,7 @@ doflush(Display *d)
 			acquire();
 		kgerrstr(err, sizeof err);
 		if(_drawdebug || strcmp(err, "screen id in use") != 0 && strcmp(err, exImage) != 0){
-			print("flushimage fail: (%d not %d) d=%lux: %s\nbuffer: ", m, n, (ulong)d, err);
+			print("flushimage fail: (%d not %d) d=%p: %s\nbuffer: ", m, n, d, err);
 			for(tp = d->buf; tp < d->bufp; tp++)
 				print("%.2x ", (int)*tp);
 			print("\n");
@@ -2325,7 +2325,7 @@ bufimage(Display *d, int n)
 	}
 	if(d->bufp+n > d->buf+Displaybufsize){
 		if(d->local==0 && currun()!=libqlowner(d->qlock)) {
-			print("bufimage: %lux %lux\n", (ulong)libqlowner(d->qlock), (ulong)currun());
+			print("bufimage: %p %p\n", libqlowner(d->qlock), currun());
 			abort();
 		}
 		if(doflush(d) < 0)

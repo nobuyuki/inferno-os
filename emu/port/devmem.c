@@ -222,7 +222,7 @@ memaudit(int pno, Bhdr *b)
 		return nil;
 	}
 	poolstate[pno].ptr++;
-	p->base = (ulong)b;
+	p->base = (ulong)(uintptr)b;
 	p->size = b->size;
 	switch(b->magic){
 	case MAGIC_A:

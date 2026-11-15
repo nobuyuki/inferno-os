@@ -1,9 +1,12 @@
 #include "lib9.h"
+#pragma push_macro("long")
+#undef long
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <pwd.h>
 #include <grp.h>
 
+#pragma pop_macro("long")
 static char nullstring[] = "";
 static char Enovmem[] = "out of memory";
 

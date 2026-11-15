@@ -14,14 +14,20 @@
 #include	"fns.h"
 #include	"error.h"
 
+#pragma push_macro("long")
+#undef long
 #include <semaphore.h>
 
+#pragma pop_macro("long")
 #include	<raise.h>
 
 /* glibc 2.3.3-NTPL messes up getpid() by trying to cache the result, so we'll do it ourselves */
+#pragma push_macro("long")
+#undef long
 #include	<sys/syscall.h>
 #define	getpid()	syscall(SYS_getpid)
 
+#pragma pop_macro("long")
 enum
 {
 	DELETE	= 0x7f,

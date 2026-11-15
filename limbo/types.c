@@ -2218,7 +2218,7 @@ fatal("sizetype bogus ok for %t", t);
 		t->align = IBY2WD;
 		break;
 	case Tcasel:
-		t->size = t->cse->nlab * 6*IBY2WD + 3*IBY2WD;
+		t->size = t->cse->nlab * (2*IBY2LG+2*IBY2WD) + 3*IBY2WD;
 		t->align = IBY2LG;
 		break;
 	case Tgoto:

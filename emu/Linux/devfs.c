@@ -1,9 +1,12 @@
 #include "devfs-posix.c"
 
+#pragma push_macro("long")
+#undef long
 #include	<linux/hdreg.h>
 #include	<linux/fs.h>
 #include	<sys/ioctl.h>
 
+#pragma pop_macro("long")
 static vlong
 osdisksize(int fd)
 {

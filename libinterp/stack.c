@@ -6,6 +6,8 @@
 
 #define T(r)	*((void**)(R.r))
 
+enum { Stkhdr = offsetof(Stkext, reg.tos) };
+
 void
 newstack(Prog *p)
 {
@@ -24,9 +26,9 @@ newstack(Prog *p)
 	f->mr = nil;
 	f->fp = nil;
 	l = p->R.M->m->ss;
-	/* 16 bytes for Stkext record keeping */
-	if(l < t->size+16)
-		l = t->size+16;
+	/* allow for Stkext record keeping */
+	if(l < t->size+Stkhdr)
+		l = t->size+Stkhdr;
 	ns = mallocz(l, 0);
 	if(ns == nil)
 		error(exNomem);
@@ -55,9 +57,9 @@ extend(void)
 
 	t = R.s;
 	l = R.M->m->ss;
-	/* 16 bytes for Stkext record keeping */
-	if(l < t->size+16)
-		l = 2*t->size+16;
+	/* allow for Stkext record keeping */
+	if(l < t->size+Stkhdr)
+		l = 2*t->size+Stkhdr;
 	ns = mallocz(l, 0);
 	if(ns == nil)
 		error(exNomem);

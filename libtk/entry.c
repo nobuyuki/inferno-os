@@ -18,7 +18,7 @@
 	+see
 */
 
-#define	O(t, e)		((long)(&((t*)0)->e))
+#define	O(t, e)		((long)(uintptr)(&((t*)0)->e))
 
 #define CNTL(c) ((c)&0x1f)
 #define DEL 0x7f

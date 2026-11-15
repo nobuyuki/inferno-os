@@ -2,6 +2,8 @@
 #include "fns.h"
 #include "error.h"
 #include "audio.h"
+#pragma push_macro("long")
+#undef long
 #include <sys/ioctl.h>
 #include <sys/soundcard.h>
 
@@ -16,6 +18,7 @@
 #define 	Audio_Ulaw_Val		AFMT_MU_LAW
 #define 	Audio_Alaw_Val		AFMT_A_LAW
 
+#pragma pop_macro("long")
 #include "audio-tbls.c"
 #define	min(a,b)	((a) < (b) ? (a) : (b))
 

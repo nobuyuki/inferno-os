@@ -93,8 +93,8 @@ typedef struct Heapqry Heapqry;
 struct Heapqry
 {
 	char	fmt;
-	ulong	addr;
-	ulong	module;
+	uintptr	addr;
+	uintptr	module;
 	int	count;
 };
 
@@ -526,7 +526,7 @@ pc2dispc(Inst *pc, Module *mod)
 	ulong l, u, m, v;
 	ulong *tab = mod->pctab;
 
-	v = (ulong)pc - (ulong)mod->prog;
+	v = (uintptr)pc - (uintptr)mod->prog;
 	l = 0;
 	u = mod->nprog-1;
 	while(l < u){
@@ -568,11 +568,11 @@ progstack(REG *reg, int state, char *va, int count, long offset)
 
 	while(fp != nil) {
 		f = (Frame*)fp;
-		n += snprint(va+n, count-n, "%.8lux %.8lux %.8lux %.8lux %d %s\n",
-				(ulong)f,		/* FP */
+		n += snprint(va+n, count-n, "%.8llux %.8lux %.8llux %.8llux %d %s\n",
+				(uvlong)(uintptr)f,		/* FP */
 				(ulong)(pc - m->prog),	/* PC in dis instructions */
-				(ulong)m->MP,		/* MP */
-				(ulong)m->prog,	/* Code for module */
+				(uvlong)(uintptr)m->MP,		/* MP */
+				(uvlong)(uintptr)m->prog,	/* Code for module */
 				m->compiled && m->m->pctab == nil,	/* True if native assembler: fool stack utility for now */
 				m->m->path);	/* File system path */
 
@@ -613,7 +613,6 @@ calldepth(REG *reg)
 static int
 progheap(Heapqry *hq, char *va, int count, ulong offset)
 {
-	WORD *w;
 	void *p;
 	List *hd;
 	Array *a;
@@ -621,9 +620,9 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 	Module *m;
 	Modlink *ml;
 	Channel *c;
-	ulong addr;
+	uintptr addr;
 	String *ss;
-	union { REAL r; LONG l; WORD w[2]; } rock;
+	union { REAL r; LONG l; } rock;
 	int i, s, n, len, signed_off;
 	Type *t;
 
@@ -636,7 +635,7 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 		case 'W':
 			if(addr & 3)
 				return -1;
-			n += snprint(va+n, count-n, "%d\n", *(WORD*)addr);
+			n += snprint(va+n, count-n, "%d\n", (int)*(WORD*)addr);
 			s = sizeof(WORD);
 			break;
 		case 'B':
@@ -646,18 +645,14 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 		case 'V':
 			if(addr & 3)
 				return -1;
-			w = (WORD*)addr;
-			rock.w[0] = w[0];
-			rock.w[1] = w[1];
+			memmove(&rock, (void*)addr, sizeof(rock));
 			n += snprint(va+n, count-n, "%lld\n", rock.l);
 			s = sizeof(LONG);
 			break;
 		case 'R':
 			if(addr & 3)
 				return -1;
-			w = (WORD*)addr;
-			rock.w[0] = w[0];
-			rock.w[1] = w[1];
+			memmove(&rock, (void*)addr, sizeof(rock));
 			n += snprint(va+n, count-n, "%g\n", rock.r);
 			s = sizeof(REAL);
 			break;
@@ -669,7 +664,7 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 					break;
 			if(m == nil)
 				error(Ebadctl);
-			addr = (ulong)(m->prog+addr);
+			addr = (uintptr)(m->prog+addr);
 			n += snprint(va+n, count-n, "%D\n", (Inst*)addr);
 			s = sizeof(Inst);
 			break;
@@ -679,8 +674,8 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 			p = *(void**)addr;
 			fmt = "nil\n";
 			if(p != H)
-				fmt = "%lux\n";
-			n += snprint(va+n, count-n, fmt, p);
+				fmt = "%llux\n";
+			n += snprint(va+n, count-n, fmt, (uvlong)(uintptr)p);
 			s = sizeof(WORD);
 			break;
 		case 'L':
@@ -689,7 +684,7 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 			hd = *(List**)addr;
 			if(hd == H || D2H(hd)->t != &Tlist)
 				return -1;
-			n += snprint(va+n, count-n, "%lux.%lux\n", (ulong)&hd->tail, (ulong)hd->data);
+			n += snprint(va+n, count-n, "%llux.%llux\n", (uvlong)(uintptr)&hd->tail, (uvlong)(uintptr)hd->data);
 			s = sizeof(WORD);
 			break;
 		case 'A':
@@ -701,7 +696,7 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 			else {
 				if(D2H(a)->t != &Tarray)
 					return -1;
-				n += snprint(va+n, count-n, "%d.%lux\n", a->len, (ulong)a->data);
+				n += snprint(va+n, count-n, "%d.%llux\n", (int)a->len, (uvlong)(uintptr)a->data);
 			}
 			s = sizeof(WORD);
 			break;
@@ -728,8 +723,10 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 			if(addr & 3)
 				return -1;
 			ml = *(Modlink**)addr;
-			fmt = ml == H ? "nil\n" : "%lux\n";
-			n += snprint(va+n, count-n, fmt, ml->MP);
+			if(ml == H)
+				n += snprint(va+n, count-n, "nil\n");
+			else
+				n += snprint(va+n, count-n, "%llux\n", (uvlong)(uintptr)ml->MP);
 			s = sizeof(WORD);
 			break;
 		case 'c':
@@ -743,9 +740,9 @@ progheap(Heapqry *hq, char *va, int count, ulong offset)
 				if(t != &Tchannel && t != Trdchan && t != Twrchan)
 					return -1;
 				if(c->buf == H)
-					n += snprint(va+n, count-n, "0.%lux\n", (ulong)c);
+					n += snprint(va+n, count-n, "0.%llux\n", (uvlong)(uintptr)c);
 				else
-					n += snprint(va+n, count-n, "%d.%lux.%d.%d\n", c->buf->len, (ulong)c->buf->data, c->front, c->size);
+					n += snprint(va+n, count-n, "%d.%llux.%d.%d\n", (int)c->buf->len, (uvlong)(uintptr)c->buf->data, c->front, c->size);
 			}
 			break;
 			
@@ -1149,9 +1146,9 @@ progwrite(Chan *c, void *va, long n, vlong offset)
 		memmove(buf, va, i);
 		buf[i] = '\0';
 		hq = c->aux;
-		hq->addr = strtoul(buf, &b, 0);
+		hq->addr = strtoull(buf, &b, 0);
 		if(*b == '+')
-			hq->module = strtoul(b, &b, 0);
+			hq->module = strtoull(b, &b, 0);
 		if(*b++ != '.')
 			error(Ebadctl);
 		hq->fmt = *b++;
@@ -1414,8 +1411,8 @@ dbgxec(Prog *p)
 
 	while(R.IC != 0) {
 		if(0)
-			print("step: %lux: %s %4ld %D\n",
-				(ulong)p, R.M->m->name, R.PC-R.M->prog, R.PC);
+			print("step: %p: %s %4ld %D\n",
+				p, R.M->m->name, R.PC-R.M->prog, R.PC);
 
 		dec[R.PC->add]();
 		op = R.PC->op;

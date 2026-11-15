@@ -2,6 +2,8 @@
 #include "fns.h"
 #include "cursor.h"
 #include "keyboard.h"
+#pragma push_macro("long")
+#undef long
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -16,6 +18,7 @@
 /*
  * alias defs for image types to overcome name conflicts
  */
+#pragma pop_macro("long")
 typedef struct ICursor		ICursor;
 typedef struct IPoint		IPoint;
 typedef struct IRectangle	IRectangle;

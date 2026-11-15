@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+# usage: chklong cc [flags...] file.[cS]
+# Compile, but first check that no system header is read while
+# `long' is redefined as int (see Linux/amd64/include/lib9.h):
+# its declarations would silently be given the wrong sizes.
+import sys, subprocess, re
+args = sys.argv[1:]
+src = [a for a in args if a.endswith('.c')]
+if src:
+    pp, skip = [], False
+    for a in args:
+        if skip:
+            skip = False
+        elif a == '-o':
+            skip = True
+        elif a != '-c':
+            pp.append(a)
+    out = subprocess.run(pp + ['-E', '-dD'], capture_output=True, text=True, errors='replace').stdout
+    on, bad = False, False
+    for l in out.split('\n'):
+        if l.startswith('#define long '):
+            on = True
+        elif l.startswith('#undef long'):
+            on = False
+        elif on and l.startswith('# '):
+            m = re.match(r'# \d+ "(/usr/[^"]+)"((?: \d)*)', l)
+            if m and '1' in m.group(2).split():
+                print('%s: long is redefined while reading %s' % (src[0], m.group(1)), file=sys.stderr)
+                bad = True
+    if bad:
+        sys.exit(1)
+sys.exit(subprocess.run(args).returncode)
