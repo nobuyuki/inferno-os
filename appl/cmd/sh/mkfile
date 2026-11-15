@@ -15,19 +15,19 @@ TARG=sh.dis\
 	csv.dis\
 	test.dis\
 
-INS=	$ROOT/dis/sh.dis\
-	$ROOT/dis/sh/arg.dis\
-	$ROOT/dis/sh/expr.dis\
-	$ROOT/dis/sh/file2chan.dis\
-	$ROOT/dis/sh/mload.dis\
-	$ROOT/dis/sh/mpexpr.dis\
-	$ROOT/dis/sh/regex.dis\
-	$ROOT/dis/sh/std.dis\
-	$ROOT/dis/sh/string.dis\
-#	$ROOT/dis/sh/tk.dis\
-	$ROOT/dis/sh/echo.dis\
-	$ROOT/dis/sh/csv.dis\
-	$ROOT/dis/sh/test.dis\
+INS=	$ROOT/$DISDIR/sh.dis\
+	$ROOT/$DISDIR/sh/arg.dis\
+	$ROOT/$DISDIR/sh/expr.dis\
+	$ROOT/$DISDIR/sh/file2chan.dis\
+	$ROOT/$DISDIR/sh/mload.dis\
+	$ROOT/$DISDIR/sh/mpexpr.dis\
+	$ROOT/$DISDIR/sh/regex.dis\
+	$ROOT/$DISDIR/sh/std.dis\
+	$ROOT/$DISDIR/sh/string.dis\
+#	$ROOT/$DISDIR/sh/tk.dis\
+	$ROOT/$DISDIR/sh/echo.dis\
+	$ROOT/$DISDIR/sh/csv.dis\
+	$ROOT/$DISDIR/sh/test.dis\
 
 SYSMODULES=\
 	bufio.m\
@@ -42,7 +42,7 @@ SYSMODULES=\
 	tk.m\
 	tkclient.m\
 
-DISBIN=$ROOT/dis/sh
+DISBIN=$ROOT/$DISDIR/sh
 
 <$ROOT/mkfiles/mkdis
 
@@ -60,7 +60,7 @@ clean:V:
 uninstall:V:
 	rm -f $INS
 
-$ROOT/dis/sh.dis:	sh.dis
-	rm -f $ROOT/dis/sh.dis && cp sh.dis $ROOT/dis/sh.dis
+$ROOT/$DISDIR/sh.dis:	sh.dis
+	rm -f $ROOT/$DISDIR/sh.dis && cp sh.dis $ROOT/$DISDIR/sh.dis
 
 %.dis: ${SYSMODULES:%=$MODDIR/%}

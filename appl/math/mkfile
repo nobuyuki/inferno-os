@@ -38,6 +38,6 @@ SYSMODULES=\
 	math/polyfill.m\
 	math/polyhedra.m\
 
-DISBIN=$ROOT/dis/math
+DISBIN=$ROOT/$DISDIR/math
 
 <$ROOT/mkfiles/mkdis

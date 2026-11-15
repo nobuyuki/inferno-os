@@ -16,13 +16,13 @@ SYSMODULES=\
 	tk.m\
 	tkclient.m\
 
-DISBIN=$ROOT/dis/grid/demo
+DISBIN=$ROOT/$DISDIR/grid/demo
 
 <$ROOT/mkfiles/mkdis
 
-$ROOT/dis/grid/demo/blur.dis:	blur.dis
+$ROOT/$DISDIR/grid/demo/blur.dis:	blur.dis
 	rm -f $target && cp blur.dis $target
-$ROOT/dis/grid/demo/block.dis:	block.dis
+$ROOT/$DISDIR/grid/demo/block.dis:	block.dis
 	rm -f $target && cp block.dis $target
 
 blur.dis:	blur.b $MODULE $SYS_MODULE

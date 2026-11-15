@@ -29,5 +29,13 @@ OBJTYPE=amd64
 #
 OBJDIR=$SYSTARG/$OBJTYPE
 
+#
+#	Dis object files are installed in $ROOT/$DISDIR.
+#	A target with 64-bit words has its own, because the files differ
+#	(see mkfiles/mkfile-Linux-amd64); emu binds it to /dis.
+#
+DISDIR=dis
+ACMEDIR=acme		# likewise acme's commands
+
 <$ROOT/mkfiles/mkhost-$SYSHOST			# variables appropriate for host system
 <$ROOT/mkfiles/mkfile-$SYSTARG-$OBJTYPE	# variables used to build target object type

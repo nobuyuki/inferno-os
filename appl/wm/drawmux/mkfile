@@ -19,8 +19,8 @@ SYSMODULES=\
 	tk.m\
 	wmlib.m\
 
-DISBIN=$ROOT/dis/wm
-DISLIB=$ROOT/dis/lib
+DISBIN=$ROOT/$DISDIR/wm
+DISLIB=$ROOT/$DISDIR/lib
 
 all:V:	$TARG $LIBTARG
 

@@ -96,7 +96,7 @@ SYSMODULES=\
 	wmsrv.m\
 	workdir.m\
 
-DISBIN=$ROOT/dis/wm
+DISBIN=$ROOT/$DISDIR/wm
 
 <$ROOT/mkfiles/mkdis
 <$ROOT/mkfiles/mksubdirs

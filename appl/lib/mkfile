@@ -209,7 +209,7 @@ SYSMODULES= \
 	watchvars.m\
 	wmlib.m\
 
-DISBIN=$ROOT/dis/lib
+DISBIN=$ROOT/$DISDIR/lib
 
 <$ROOT/mkfiles/mkdis
 <$ROOT/mkfiles/mksubdirs

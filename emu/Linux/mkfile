@@ -46,7 +46,7 @@ $O.$CONF:	$OBJ $CONF.c $CONF.root.h $LIBNAMES
 	$LD $LDFLAGS -o $target $OBJ $CONF.$O $LIBFILES $SYSLIBS
 
 install:V: $O.$CONF
-	cp $O.$CONF $INSTALLDIR/$CONF
+	rm -f $INSTALLDIR/$CONF && cp $O.$CONF $INSTALLDIR/$CONF
 
 <../port/portmkfile
 

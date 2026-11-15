@@ -23,7 +23,7 @@ SYSMODULES=\
 	ipattr.m\
 	sys.m\
 
-DISBIN=$ROOT/dis/ip
+DISBIN=$ROOT/$DISDIR/ip
 
 <$ROOT/mkfiles/mkdis
 <$ROOT/mkfiles/mksubdirs

@@ -19,7 +19,7 @@ SYSMODULES=\
 	string.m\
 	sys.m\
 
-DISBIN=$ROOT/dis
+DISBIN=$ROOT/$DISDIR
 
 <$ROOT/mkfiles/mkdis
 

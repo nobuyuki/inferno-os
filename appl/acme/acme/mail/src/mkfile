@@ -11,6 +11,6 @@ SYSMODULES=\
 	sys.m\
 	draw.m\
 
-DISBIN=$ROOT/acme/mail
+DISBIN=$ROOT/$ACMEDIR/mail
 
 <$ROOT/mkfiles/mkdis

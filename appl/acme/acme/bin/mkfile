@@ -1,6 +1,6 @@
 <../../../../mkconfig
 
-BIN=$ROOT/acme/bin
+BIN=$ROOT/$ACMEDIR/bin
 
 DIRS=\
 	src\

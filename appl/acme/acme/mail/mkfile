@@ -1,6 +1,6 @@
 <../../../../mkconfig
 
-BIN=$ROOT/acme/mail
+BIN=$ROOT/$ACMEDIR/mail
 
 DIRS=\
 	src\
@@ -18,7 +18,7 @@ SYSMODULES=\
 
 BINTARG=${TARG:%=$BIN/%}
 
-DISBIN=$ROOT/acme/mail
+DISBIN=$ROOT/$ACMEDIR/mail
 
 all:V:		$TARG
 

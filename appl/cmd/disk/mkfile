@@ -19,7 +19,7 @@ SYSMODULES=\
 	bufio.m\
 	string.m\
 
-DISBIN=$ROOT/dis/disk
+DISBIN=$ROOT/$DISDIR/disk
 
 <$ROOT/mkfiles/mkdis
 <$ROOT/mkfiles/mksubdirs

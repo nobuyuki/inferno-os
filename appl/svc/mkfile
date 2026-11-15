@@ -11,7 +11,7 @@ SHTARG=\
 	rstyx.sh\
 	styx.sh\
 
-BIN=$ROOT/dis/svc
+BIN=$ROOT/$DISDIR/svc
 
 <$ROOT/mkfiles/mksubdirs
 

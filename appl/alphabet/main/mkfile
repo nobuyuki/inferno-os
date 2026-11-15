@@ -30,7 +30,7 @@ SYSMODULES=\
 	sh.m\
 	sys.m\
 
-DISBIN=$ROOT/dis/alphabet/main
+DISBIN=$ROOT/$DISDIR/alphabet/main
 
 <$ROOT/mkfiles/mkdis
 LIMBOFLAGS=-F $LIMBOFLAGS

@@ -7,12 +7,12 @@ TARG=	mash.dis\
 	history.dis\
 	make.dis\
 
-INS=	$ROOT/dis/mash.dis\
-	$ROOT/dis/lib/mashlib.dis\
-	$ROOT/dis/lib/mashparse.dis\
-	$ROOT/dis/lib/mash/builtins.dis\
-	$ROOT/dis/lib/mash/history.dis\
-	$ROOT/dis/lib/mash/make.dis\
+INS=	$ROOT/$DISDIR/mash.dis\
+	$ROOT/$DISDIR/lib/mashlib.dis\
+	$ROOT/$DISDIR/lib/mashparse.dis\
+	$ROOT/$DISDIR/lib/mash/builtins.dis\
+	$ROOT/$DISDIR/lib/mash/history.dis\
+	$ROOT/$DISDIR/lib/mash/make.dis\
 
 MODULES=\
 	mash.m\
@@ -56,17 +56,17 @@ MODDIR=$ROOT/module
 SYS_MODULE=${SYSMODULES:%=$MODDIR/%}
 LIMBOFLAGS=-I$MODDIR
 
-$ROOT/dis/mash.dis:	mash.dis
-	rm -f $ROOT/dis/mash.dis && cp mash.dis $ROOT/dis/mash.dis
+$ROOT/$DISDIR/mash.dis:	mash.dis
+	rm -f $ROOT/$DISDIR/mash.dis && cp mash.dis $ROOT/$DISDIR/mash.dis
 
-$ROOT/dis/lib/mashlib.dis:	mashlib.dis
-	rm -f $ROOT/dis/mashlib.dis && cp mashlib.dis $ROOT/dis/lib/mashlib.dis
+$ROOT/$DISDIR/lib/mashlib.dis:	mashlib.dis
+	rm -f $ROOT/$DISDIR/mashlib.dis && cp mashlib.dis $ROOT/$DISDIR/lib/mashlib.dis
 
-$ROOT/dis/lib/mashparse.dis:	mashparse.dis
-	rm -f $ROOT/dis/mashparse.dis && cp mashparse.dis $ROOT/dis/lib/mashparse.dis
+$ROOT/$DISDIR/lib/mashparse.dis:	mashparse.dis
+	rm -f $ROOT/$DISDIR/mashparse.dis && cp mashparse.dis $ROOT/$DISDIR/lib/mashparse.dis
 
-$ROOT/dis/lib/mash/%.dis:	%.dis
-	rm -f $ROOT/dis/$stem.dis && cp $stem.dis $ROOT/dis/lib/mash/$stem.dis
+$ROOT/$DISDIR/lib/mash/%.dis:	%.dis
+	rm -f $ROOT/$DISDIR/$stem.dis && cp $stem.dis $ROOT/$DISDIR/lib/mash/$stem.dis
 
 %.dis:		$MODULES $SYS_MODULE
 mashlib.dis:	$LIBSRC

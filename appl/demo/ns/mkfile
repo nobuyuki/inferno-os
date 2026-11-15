@@ -14,7 +14,7 @@ SYSMODULES= \
 	sh.m\
 	sys.m\
 
-DISBIN=$ROOT/dis/demo/ns
+DISBIN=$ROOT/$DISDIR/demo/ns
 
 <$ROOT/mkfiles/mkdis
 

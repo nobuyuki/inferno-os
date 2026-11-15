@@ -15,6 +15,6 @@ SYSMODULES=\
 	sys.m\
 	draw.m\
 
-DISBIN=$ROOT/acme/acid
+DISBIN=$ROOT/$ACMEDIR/acid
 
 <$ROOT/mkfiles/mkdis

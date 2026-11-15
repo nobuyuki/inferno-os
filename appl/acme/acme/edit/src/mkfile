@@ -18,6 +18,6 @@ SYSMODULES=\
 	sys.m\
 	draw.m\
 
-DISBIN=$ROOT/acme/edit
+DISBIN=$ROOT/$ACMEDIR/edit
 
 <$ROOT/mkfiles/mkdis

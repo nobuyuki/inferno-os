@@ -300,6 +300,14 @@ emuinit(void *imod)
 
 	/* the setid cannot precede the bind of #U */
 	kbind("#U", "/", MAFTER|MCREATE);
+	/*
+	 * Dis object files for 64-bit words differ from the 32-bit ones,
+	 * and are kept in their own directory, which appears as /dis.
+	 */
+	if(sizeof(void*) == 8){
+		kbind("#U/dis64", "/dis", MREPL);
+		kbind("#U/acme64", "/acme", MBEFORE);
+	}
 	setid(eve, 0);
 	kbind("#^", "/dev", MBEFORE);	/* snarf */
 	kbind("#^", "/chan", MBEFORE);
