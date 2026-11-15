@@ -659,11 +659,46 @@ Image_lineop(void *fp)
 	drawline(fp, f->op);
 }
 
+/*
+ * An array of Draw_Point as an array of Point.
+ * If a Dis word is the size of an int, they have the same shape
+ * and the array can be used where it is; otherwise make a copy.
+ */
+static Point*
+ipoints(Array *a)
+{
+	Point *pts;
+	Draw_Point *dp;
+	int i;
+
+	if(a == H)
+		error(exNilref);
+	if(sizeof(Draw_Point) == sizeof(Point))
+		return (Point*)a->data;
+	pts = malloc((a->len+1)*sizeof(Point));
+	if(pts == nil)
+		error(exNomem);
+	dp = (Draw_Point*)a->data;
+	for(i = 0; i < a->len; i++){
+		pts[i].x = dp[i].x;
+		pts[i].y = dp[i].y;
+	}
+	return pts;
+}
+
+static void
+freeipoints(Array *a, Point *pts)
+{
+	if(pts != (Point*)a->data)
+		free(pts);
+}
+
 static void
 drawsplinepoly(void *fp, int smooth, int op)
 {
 	F_Image_poly *f;
 	Image *d, *s;
+	Point *pts;
 	int locked;
 
 	f = fp;
@@ -671,17 +706,18 @@ drawsplinepoly(void *fp, int smooth, int op)
 	s = checkimage(f->src);
 	if(d->display != s->display|| f->radius < 0)
 		return;
+	pts = ipoints(f->p);
 	locked = lockdisplay(d->display);
-	/* sleazy: we know that Draw_Points have same shape as Points */
 	if(smooth)
-		bezsplineop(d, (Point*)f->p->data, f->p->len,
+		bezsplineop(d, pts, f->p->len,
 			f->end0, f->end1, f->radius, s, IPOINT(f->sp), op);
 	else
-		polyop(d, (Point*)f->p->data, f->p->len, f->end0,
+		polyop(d, pts, f->p->len, f->end0,
 			f->end1, f->radius, s, IPOINT(f->sp), op);
 	checkflush(f->dst);
 	if(locked)
 		unlockdisplay(d->display);
+	freeipoints(f->p, pts);
 }
 
 void
@@ -789,6 +825,7 @@ drawfillsplinepoly(void *fp, int smooth, int op)
 {
 	F_Image_fillpoly *f;
 	Image *d, *s;
+	Point *pts;
 	int locked;
 
 	f = fp;
@@ -796,17 +833,18 @@ drawfillsplinepoly(void *fp, int smooth, int op)
 	s = checkimage(f->src);
 	if(d->display != s->display)
 		return;
+	pts = ipoints(f->p);
 	locked = lockdisplay(d->display);
-	/* sleazy: we know that Draw_Points have same shape as Points */
 	if(smooth)
-		fillbezsplineop(d, (Point*)f->p->data, f->p->len,
+		fillbezsplineop(d, pts, f->p->len,
 			f->wind, s, IPOINT(f->sp), op);
 	else
-		fillpolyop(d, (Point*)f->p->data, f->p->len,
+		fillpolyop(d, pts, f->p->len,
 			f->wind, s, IPOINT(f->sp), op);
 	checkflush(f->dst);
 	if(locked)
 		unlockdisplay(d->display);
+	freeipoints(f->p, pts);
 }
 
 void

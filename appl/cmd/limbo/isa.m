@@ -179,8 +179,9 @@
 	# add new operators here
 	MAXDIS: con iota;
 
-XMAGIC:		con 819248;	# Normal magic
-SMAGIC:		con 923426;	# Signed module
+# XMAGIC, SMAGIC and IBY2WD depend on the size of a word
+# on the machine that will run the object code
+include "wordsize.m";
 
 AMP:		con 16r00;	# Src/Dst op addressing 
 AFP:		con 16r01;
@@ -216,7 +217,6 @@ REGTYP:		con 3;
 REGRET:		con 4;
 NREG:		con 5;
 
-IBY2WD:		con 4;
 IBY2FT:		con 8;
 IBY2LG:		con 8;
 

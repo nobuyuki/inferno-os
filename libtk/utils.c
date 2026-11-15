@@ -1029,7 +1029,7 @@ tkdeliver(Tk *tk, int event, void *data)
 {
 	Tk *dest;
 
-	if(tk != nil && ((ulong)tk->type >= TKwidgets || (ulong)tk->name < 4096 && tk->name != nil)){
+	if(tk != nil && ((ulong)tk->type >= TKwidgets || (uintptr)tk->name < 4096 && tk->name != nil)){
 		print("invalid Tk: type %d name %p\n", tk->type, tk->name);
 		abort();
 	}
@@ -1953,7 +1953,7 @@ tkhaskeyfocus(Tk *tk)
 static int
 rptactive(void *v)
 {
-	int id = (int)v;
+	int id = (int)(uintptr)v;
 	if (id == rptid)
 		return 1;
 	return 0;
@@ -1962,7 +1962,7 @@ rptactive(void *v)
 static int
 ckrpt(void *v, int interval)
 {
-	int id = (int)v;
+	int id = (int)(uintptr)v;
 	if (id != rptid)
 		return -1;
 	if (interval < rptto)
@@ -1973,7 +1973,7 @@ ckrpt(void *v, int interval)
 static void
 dorpt(void *v)
 {
-	int id = (int)v;
+	int id = (int)(uintptr)v;
 
 	if (id == rptid) {
 		rptto = rptint;
@@ -2009,9 +2009,9 @@ tkrepeat(Tk *tk, void (*callback)(Tk*, void*, int), void *note, int pause, int i
 	rptto = pause;
 	rptint = interval;
 	if (!autorpt)
-		autorpt = rptproc("autorepeat", TkRptclick, (void*)rptid, rptactive, ckrpt, dorpt);
+		autorpt = rptproc("autorepeat", TkRptclick, (void*)(uintptr)rptid, rptactive, ckrpt, dorpt);
 	else
-		rptwakeup((void*)rptid, autorpt);
+		rptwakeup((void*)(uintptr)rptid, autorpt);
 }
 
 static int
@@ -2085,7 +2085,7 @@ tkdump(Tk *tk)
 		print("%s", tkmethod[tk->type]->name);
 	else
 		print("TYPE#%#ux", tk->type);
-	if(tk->name == nil || (ulong)tk->name < 512)
+	if(tk->name == nil || (uintptr)tk->name < 512)
 		print(" NAME %p", tk->name);
 	else
 		print(" %s", tkname(tk));

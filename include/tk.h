@@ -140,6 +140,24 @@ extern	int TKF2I(int);
 #define TKKEY(i)	((i)&0xFFFF)
 
 typedef struct Tk Tk;
+
+/*
+ * a Draw->Rect as it lies in Dis memory, where each int
+ * occupies a word the size of a pointer (see TkTop.screenr)
+ */
+typedef struct TkDispoint TkDispoint;
+typedef struct TkDisrect TkDisrect;
+struct TkDispoint
+{
+	uintptr	x;
+	uintptr	y;
+};
+struct TkDisrect
+{
+	TkDispoint	min;
+	TkDispoint	max;
+};
+#define	TKDISRECT(r)	Rect((int)(r).min.x, (int)(r).min.y, (int)(r).max.x, (int)(r).max.y)
 typedef struct TkCol TkCol;
 typedef struct TkCtxt TkCtxt;
 typedef struct TkEnv TkEnv;
@@ -563,7 +581,7 @@ struct TkTop
 	void*	wreq;	/* really chan of string */
 	void*	di;		/* really Draw_Image* */
 	void*	wmctxt;	/* really Draw_Wmcontext */
-	Rectangle	screenr;	/* XXX sleazy equiv to Draw_Rect, but what else? */
+	TkDisrect	screenr;	/* the same shape as Draw_Rect */
 
 	/* Private from here on */
 	TkCtxt*		ctxt;

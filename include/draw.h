@@ -541,10 +541,23 @@ extern	void	font_close(Font*);
 /*
  * Macros to convert between C and Limbo types
  */
+/*
+ * Conversion between the C and Limbo forms of points and rectangles.
+ * When a Dis word is the size of an int they have the same shape and
+ * a cast is enough; when a word is wider (as on a 64-bit machine)
+ * the Limbo ints are further apart, and the values must be converted.
+ */
+#if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 8
+#define	IRECT(r)	Rect((r).min.x, (r).min.y, (r).max.x, (r).max.y)
+#define	DRECT(r)	((Draw_Rect){{(r).min.x, (r).min.y}, {(r).max.x, (r).max.y}})
+#define	IPOINT(p)	Pt((p).x, (p).y)
+#define	DPOINT(p)	((Draw_Point){(p).x, (p).y})
+#else
 #define	IRECT(r)	(*(Rectangle*)&(r))
 #define	DRECT(r)	(*(Draw_Rect*)&(r))
 #define	IPOINT(p)	(*(Point*)&(p))
 #define	DPOINT(p)	(*(Draw_Point*)&(p))
+#endif
 
 #define P2P(p1, p2)	(p1).x = (p2).x, (p1).y = (p2).y
 #define R2R(r1, r2)	(r1).min.x = (r2).min.x, (r1).min.y = (r2).min.y,\

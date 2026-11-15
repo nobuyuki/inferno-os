@@ -136,7 +136,7 @@ Tk_toplevel(void *a)
 		return;
 	}
 	t->ctxt = ctxt;
-	t->screenr = disp->image->r;
+	R2R(t->screenr, disp->image->r);
 
 	tkw->next = t->windows;
 	t->windows = tk;
@@ -203,13 +203,13 @@ Tk_rect(void *fp)
 
 	t = (TkTop*)f->t;
 	if(t == H || D2H(t)->t != fakeTkTop){
-		*(Rectangle*)f->ret = ZR;
+		R2R(*f->ret, ZR);
 		return;
 	}
 	lockctxt(t->ctxt);
 	tk = tklook(t, string2c(f->name), 0);
 	if(tk == nil){
-		*(Rectangle*)f->ret = ZR;
+		R2R(*f->ret, ZR);
 		unlockctxt(t->ctxt);
 		return;
 	}
@@ -242,7 +242,7 @@ Tk_rect(void *fp)
 		r.max.x = r.min.x + w;
 		r.max.y = r.min.y + h;
 	}
-	*(Rectangle*)f->ret = r;
+	R2R(*f->ret, r);
 }
 
 int

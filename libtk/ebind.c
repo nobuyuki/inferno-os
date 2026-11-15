@@ -261,7 +261,7 @@ tkcmdbind(Tk *tk, int event, char *s, void *data)
 			else if((event & (TkEmouse|TkEnter)))
 				c += snprint(c, len, "%d", m->b);
 			else if((event & TkFocusin))
-				c += snprint(c, len, "%d", (int)data);
+				c += snprint(c, len, "%d", (int)(uintptr)data);
 			else
 				goto def;
 			break;
@@ -565,7 +565,7 @@ tksetkeyfocus(TkTop *top, Tk *new, int dir)
 		focusdirty(old);
 	}
 	if(new != nil && new != top->root){
-		tkdeliver(new, TkFocusin, (void*)dir);
+		tkdeliver(new, TkFocusin, (void*)(uintptr)dir);
 		focusdirty(new);
 	}
 }
@@ -882,7 +882,7 @@ tkupdatecmd(TkTop *t, char *arg, char **ret)
 {
 	Tk *tk;
 	int x, y;
-	Rectangle *dr;
+	Rectangle *dr, sr;
 	char buf[Tkmaxitem];
 
 	USED(ret);
@@ -890,7 +890,8 @@ tkupdatecmd(TkTop *t, char *arg, char **ret)
 	tkword(t, arg, buf, buf+sizeof(buf), nil);
 	if(strcmp(buf, "-onscreen") == 0){
 		tk = t->root;
-		dr = &t->screenr;
+		sr = TKDISRECT(t->screenr);
+		dr = &sr;
 		x = tk->act.x;
 		if(x+tk->act.width > dr->max.x)
 			x = dr->max.x - tk->act.width;

@@ -1949,7 +1949,7 @@ fatal("sizetype bogus ok for " + stypeconv(t));
 		t.size = t.cse.nlab * 3*IBY2WD + 2*IBY2WD;
 		t.align = IBY2WD;
 	Tcasel =>
-		t.size = t.cse.nlab * 6*IBY2WD + 3*IBY2WD;
+		t.size = t.cse.nlab * (2*IBY2LG+2*IBY2WD) + 3*IBY2WD;
 		t.align = IBY2LG;
 	Tgoto =>
 		t.size = t.cse.nlab * IBY2WD + IBY2WD;

@@ -4,6 +4,7 @@ TARG=	limbo.dis\
 
 MODULES=\
 	arg.m\
+	wordsize.m\
 	disoptab.m\
 	isa.m\
 	limbo.m\
@@ -33,3 +34,19 @@ SYSMODULES= \
 DISBIN=$ROOT/dis
 
 <$ROOT/mkfiles/mkdis
+
+# the size of a Dis word is that of a pointer on the target machine,
+# and object files are marked accordingly (see include/isa.h)
+wordsize.m:	$ROOT/mkconfig
+	case $OBJTYPE in
+	amd64|arm64|riscv64|power64|mips64|sparc64)
+		echo 'XMAGIC:		con 819264;	# Normal magic, 64-bit words'
+		echo 'SMAGIC:		con 923464;	# Signed module, 64-bit words'
+		echo 'IBY2WD:		con 8;'
+		;;
+	*)
+		echo 'XMAGIC:		con 819248;	# Normal magic'
+		echo 'SMAGIC:		con 923426;	# Signed module'
+		echo 'IBY2WD:		con 4;'
+		;;
+	esac > $target
