@@ -5,6 +5,7 @@
 
 	.file	"setfcr-Linux-386.S"
 FN(setfcr):
+	movl	4(%esp), %eax
 	ENT
 	xorb	$0x3f, %al
 	movl	%eax, (%esp)
