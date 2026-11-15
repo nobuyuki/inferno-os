@@ -14,8 +14,8 @@ include "draw.m";
 include "tk.m";
         tk: Tk;
 
-include "wmlib.m";
-	wmlib: Wmlib;
+include "tkclient.m";
+	tkclient: Tkclient;
 
 include "translate.m";
 	translate: Translate;
@@ -48,8 +48,8 @@ init(ctxt: ref Draw->Context, args: list of string)
 	sys = load Sys Sys->PATH;
 	draw = load Draw Draw->PATH;
 	tk = load Tk Tk->PATH;
-	wmlib = load Wmlib Wmlib->PATH;
-	wmlib->init();
+	tkclient = load Tkclient Tkclient->PATH;
+	tkclient->init();
 
 	translate = load Translate Translate->PATH;
 	if(translate != nil) {
@@ -74,7 +74,7 @@ init(ctxt: ref Draw->Context, args: list of string)
 	if(pppfd == nil)
 		error(sys->sprint("can't open /chan/pppctl: %r"));
 
-	(t, wmctl) := wmlib->titlebar(ctxt.screen, tkargs, X("Dialup Connection"), Wmlib->Hide);
+	(t, wmctl) := tkclient->toplevel(ctxt, tkargs, X("Dialup Connection"), Tkclient->Hide);
 
 	cmd := chan of string;
 	tk->namechan(t, cmd, "cmd");
@@ -106,6 +106,8 @@ init(ctxt: ref Draw->Context, args: list of string)
 
 	for(i := 0; i < len config_win; i++)
 		tkcmd(t, config_win[i]);
+	tkclient->onscreen(t, nil);
+	tkclient->startinput(t, "kbd"::"ptr"::nil);
 
 	connected := 0;
 	winmapped := 1;
@@ -126,14 +128,18 @@ init(ctxt: ref Draw->Context, args: list of string)
 Work:
 	for(;;) alt {
 
-	s := <-wmctl =>
+	s := <-t.ctxt.kbd =>
+		tk->keyboard(t, s);
+
+	s := <-t.ctxt.ptr =>
+		tk->pointer(t, *s);
+
+	s := <-t.ctxt.ctl or
+	s = <-t.wreq or
+	s = <-wmctl =>
 		if(s == "exit")
 			s = "task";
-		if(s == "task"){
-			spawn wmlib->titlectl(t, s);
-			continue;
-		}
-		wmlib->titlectl(t, s);
+		tkclient->wmctl(t, s);
 
 	press := <-cmd =>
 		case press {
@@ -188,7 +194,7 @@ Work:
 			tkcmd(t, ".f.stat configure -fg red -text '"+X(status));
 			tkcmd(t, ".f.b.retry configure -state normal");
 			tkcmd(t, "update");
-			wmlib->unhide();
+			tkclient->wmctl(t, "untask");
 			winmapped = 1;
 			pb.stepto(step, "red");
 			#break Work;
@@ -217,7 +223,7 @@ Work:
 			tkcmd(t, "update");
 			sys->sleep(2000);
 			tkcmd(t, "pack forget .f.prog; update");
-			spawn wmlib->titlectl(t, "task");
+			tkclient->wmctl(t, "task");
 			winmapped = 0;
 		}
 		tkcmd(t, "update");

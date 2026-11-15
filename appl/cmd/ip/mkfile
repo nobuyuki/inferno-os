@@ -2,7 +2,7 @@
 
 DIRS=\
 	ppp\
-#	nppp\
+	nppp\
 
 TARG=\
 	bootpd.dis\
