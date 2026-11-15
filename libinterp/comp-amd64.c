@@ -79,6 +79,8 @@ enum
 	Osubf	= PF2|ESC|0x5c,
 	Odivf	= PF2|ESC|0x5e,
 	Ocvtlf	= PF2|ESC|0x2a,	/* CVTSI2SD xmm, r/m32 (r/m64 with W) */
+	Ocvtfl	= PF2|ESC|0x2c,	/* CVTTSD2SI r32, xmm (r64 with W) */
+	Oxorf	= ESC|0x57,	/* XORPS xmm, xmm */
 	Oucomf	= P66|ESC|0x2e,	/* UCOMISD xmm, m64 */
 	Ocomf	= P66|ESC|0x2f,	/* COMISD xmm, m64 */
 
@@ -122,6 +124,12 @@ enum
 	NMACRO
 };
 
+enum
+{
+	Maxmovmp	= 12,	/* words in the largest value that movmp copies inline */
+};
+
+static	double	fhalf[2] = { .5, -.5 };
 static	uchar*	code;
 static	uchar*	base;
 static	ulong*	patch;
@@ -757,6 +765,61 @@ arithf(Inst *i, int op)
 	opwst(i, Ostf, 0);
 }
 
+/* is word k of a value of type t a pointer? */
+static int
+isptr(Type *t, int k)
+{
+	return k/8 < t->np && (t->map[k/8] & (0x80>>(k%8))) != 0;
+}
+
+/*
+ * movmp and headmp for a type of a few words: share the pointers in the source,
+ * copy it, then release the pointers the destination had, so that
+ * nothing is read from memory that the release might have freed.
+ * returns 0 if the type is one to leave to the interpreter.
+ */
+static int
+movmp(Inst *i, Type *t)
+{
+	int k, n, np;
+	uchar *l;
+
+	n = t->size/IBY2WD;
+	if(t->size <= 0 || t->size%IBY2WD != 0 || n > Maxmovmp)
+		return 0;
+
+	if(i->op == IHEADMP) {
+		opwld(i, Oldq, RCX);
+		modrm(Olea, OA(List, data), RCX, RCX);
+	}
+	else
+		opwld(i, Olea, RCX);
+	for(k = 0; k < n; k++) {
+		if(!isptr(t, k))
+			continue;
+		modrm(Oldq, k*IBY2WD, RCX, RSI);
+		cmph(RSI);
+		l = jccb(CCE);
+		rbra(macro[MacCOLR], Ocall);		/* keeps CX */
+		label(l);
+	}
+	opwst(i, Olea, RDI);
+	np = 0;
+	for(k = 0; k < n; k++) {
+		modrm(Oldq, k*IBY2WD, RCX, RAX);
+		if(isptr(t, k)) {
+			modrm(0xff, k*IBY2WD, RDI, 6);	/* PUSHQ k(DI) */
+			np++;
+		}
+		modrm(Ostq, k*IBY2WD, RDI, RAX);
+	}
+	while(np-- > 0) {
+		genb(Opop+RAX);
+		rbra(macro[MacFRP], Ocall);
+	}
+	return 1;
+}
+
 static int
 swapcc(int cc)
 {
@@ -1021,10 +1084,53 @@ comp(Inst *i)
 		break;
 	case IADDC:
 	case IMNEWZ:
+		punt(i, SRCOP|DSTOP|THREOP, optab[i->op]);
+		break;
 	case IMULB:
+		mid(i, Oldzb, RAX);
+		if(UXSRC(i->add) == SRC(AIMM))
+			con(i->s.imm, RCX);
+		else
+			opwld(i, Oldzb, RCX);
+		modrr(Oimul, RCX, RAX);
+		opwst(i, Ostb, RAX);
+		break;
 	case IDIVB:
 	case IMODB:
-		punt(i, SRCOP|DSTOP|THREOP, optab[i->op]);
+		mid(i, Oldzb, RAX);
+		if(UXSRC(i->add) == SRC(AIMM))
+			con(i->s.imm & 0xff, RCX);
+		else
+			opwld(i, Oldzb, RCX);
+		con(0, RDX);
+		modrr(0xf7, RCX, 6);			/* DIVL CX */
+		if(i->op == IMODB)
+			modrr(Ostl, RAX, RDX);
+		opwst(i, Ostb, RAX);
+		break;
+	case IMOVMP:
+	case IHEADMP:
+		if((i->add&ARM) != AXIMM || !movmp(i, mod->type[i->reg]))
+			punt(i, SRCOP|DSTOP, optab[i->op]);
+		break;
+	case ICVTFW:
+	case ICVTFL:
+		/* round to nearest, halves away from zero, as the interpreter does */
+		opwld(i, Oldf, 0);
+		modrr(Oxorf, 1, 1);
+		conp(&fhalf[0], RAX);
+		modrr(Ocomf, 1, 0);			/* COMISD X0, X1 */
+		l = jccb(CCAE);
+		conp(&fhalf[1], RAX);
+		label(l);
+		modrm(Oaddf, 0, RAX, 0);
+		if(i->op == ICVTFL)
+			modrr(W|Ocvtfl, 0, RAX);
+		else {
+			modrr(Ocvtfl, 0, RAX);
+			modrr(Oldsx, RAX, RAX);
+		}
+		opwst(i, Ostq, RAX);
 		break;
 	case ILOAD:
 	case INEWA:
@@ -1040,8 +1146,6 @@ comp(Inst *i)
 	case ICONSM:
 	case ICONSMP:
 	case ICONSP:
-	case IMOVMP:
-	case IHEADMP:
 	case IINSC:
 	case ICVTAC:
 	case ICVTCW:
@@ -1054,8 +1158,6 @@ comp(Inst *i)
 	case ICVTFR:
 	case ICVTWS:
 	case ICVTSW:
-	case ICVTFW:
-	case ICVTFL:
 	case IMSPAWN:
 	case ICVTCA:
 	case ISLICEC:
@@ -1091,15 +1193,20 @@ comp(Inst *i)
 		opwst(i, Ostb, RAX);
 		break;
 	case ICVTWF:
+		/* clear X0 first: the conversion leaves its high half alone, so would wait for whatever wrote it */
 		if(UXSRC(i->add) == SRC(AIMM)) {
 			con(i->s.imm, RAX);
+			modrr(Oxorf, 0, 0);
 			modrr(Ocvtlf, RAX, 0);
 		}
-		else
+		else {
+			modrr(Oxorf, 0, 0);
 			opwld(i, Ocvtlf, 0);
+		}
 		opwst(i, Ostf, 0);
 		break;
 	case ICVTLF:
+		modrr(Oxorf, 0, 0);
 		opwld(i, W|Ocvtlf, 0);
 		opwst(i, Ostf, 0);
 		break;
