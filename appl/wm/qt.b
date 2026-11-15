@@ -12,6 +12,12 @@ include "tk.m";
 
 include	"tkclient.m";
 	tkclient: Tkclient;
+
+include	"dialog.m";
+	dialog: Dialog;
+
+include	"selectfile.m";
+	selectfile: Selectfile;
 	ctxt: ref Draw->Context;
 
 include "quicktime.m";
@@ -45,7 +51,7 @@ task_cfg := array[] of {
 init(xctxt: ref Draw->Context, nil: list of string)
 {
 	sys  = load Sys  Sys->PATH;
-	if (ctxt == nil) {
+	if (xctxt == nil) {
 		sys->fprint(sys->fildes(2), "qt: no window context\n");
 		raise "fail:bad context";
 	}
@@ -56,19 +62,25 @@ init(xctxt: ref Draw->Context, nil: list of string)
 	ctxt = xctxt;
 
 	tkclient->init();
-	(t, menubut) := tkclient->toplevel(ctxt.screen, "", "QuickTime Player", 0);
+	dialog = load Dialog Dialog->PATH;
+	dialog->init();
+	selectfile = load Selectfile Selectfile->PATH;
+	selectfile->init();
+	(t, menubut) := tkclient->toplevel(ctxt, "", "QuickTime Player", 0);
 
 	cmd := chan of string;
 	tk->namechan(t, cmd, "cmd");
 
-	tkclient->tkcmds(t, task_cfg);
+	tkcmds(t, task_cfg);
 
 	tk->cmd(t, "bind . <Configure> {send cmd resize}");
 	tk->cmd(t, "update");
+	tkclient->onscreen(t, nil);
+	tkclient->startinput(t, "kbd"::"ptr"::nil);
 
 	qt = load QuickTime QuickTime->PATH;
 	if(qt == nil) {
-		tkclient->dialog(t, "error -fg red", "Load Module",
+		dialog->prompt(ctxt, t.image, "error -fg red", "Load Module",
 				"Failed to load the QuickTime interface:\n"+
 					sys->sprint("%r"),
 				0, "Exit"::nil);
@@ -81,6 +93,13 @@ init(xctxt: ref Draw->Context, nil: list of string)
 	state := Stopped;
 
 	for(;;) alt {
+	s := <-t.ctxt.kbd =>
+		tk->keyboard(t, s);
+	s := <-t.ctxt.ptr =>
+		tk->pointer(t, *s);
+	s := <-t.ctxt.ctl or
+	s = <-t.wreq =>
+		tkclient->wmctl(t, s);
 	menu := <-menubut =>
 		if(menu == "exit")
 			return;
@@ -91,7 +110,7 @@ init(xctxt: ref Draw->Context, nil: list of string)
 			pat := list of {
 				"*.mov (Apple QuickTime Movie)"
 			};
-			fname = tkclient->filename(ctxt.screen, t, "Locate Movie", pat, "");
+			fname = selectfile->filename(ctxt, t.image, "Locate Movie", pat, "");
 			if(fname != nil) {
 				s := fname;
 				if(len s > 25)
@@ -122,7 +141,7 @@ moov(t: ref Toplevel, q: ref QuickTime->QD)
 			err := qt->q.mvhd(l);
 			if(err == nil)
 				break;
-			tkclient->dialog(t, "error -fg red", "Parse Headers",
+			dialog->prompt(ctxt, t.image, "error -fg red", "Parse Headers",
 					err,
 					0, "Exit"::nil);
 			exit;
@@ -130,7 +149,7 @@ moov(t: ref Toplevel, q: ref QuickTime->QD)
 			err := qt->q.trak(l);
 			if(err == nil)
 				break;
-			tkclient->dialog(t, "error -fg red", "Parse Track",
+			dialog->prompt(ctxt, t.image, "error -fg red", "Parse Track",
 					err,
 					0, "Exit"::nil);
 			exit;
@@ -142,7 +161,7 @@ play(t: ref Toplevel, file: string)
 {
 	(q, err) := qt->open(file);
 	if(err != nil) {
-		tkclient->dialog(t, "error -fg red", "Open Movie",
+		dialog->prompt(ctxt, t.image, "error -fg red", "Open Movie",
 					"Failed to open \""+file+"\"\n"+err,
 					0, "Continue"::nil);
 		return;
@@ -158,4 +177,10 @@ play(t: ref Toplevel, file: string)
 			moov(t, q);
 		}
 	}
+}
+
+tkcmds(t: ref Toplevel, a: array of string)
+{
+	for(i := 0; i < len a; i++)
+		tk->cmd(t, a[i]);
 }

@@ -36,12 +36,12 @@ TARG=\
 	mand.dis\
 	mash.dis\
 	memory.dis\
-##	mpeg.dis\
+	mpeg.dis\
 	mprof.dis\
 	pen.dis\
 	polyhedra.dis\
 	prof.dis\
-##	qt.dis\
+	qt.dis\
 	readmail.dis\
 	remotelogon.dis\
 	reversi.dis\
