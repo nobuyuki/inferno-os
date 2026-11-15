@@ -101,7 +101,7 @@ addvgaseg(char *name, ulong pa, ulong size)
 	if(va == 0)
 		return;
 	memset(&d, 0, sizeof(d));
-	strecpy(d.name, d.name+sizeof(name), name);
+	strecpy(d.name, d.name+sizeof(d.name), name);
 	lock(&vgadirlock);
 	for(i=0; i<nvgadir; i++)
 		if(strcmp(vgadir[i].name, name) == 0){
