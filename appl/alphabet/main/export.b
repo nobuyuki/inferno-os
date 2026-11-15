@@ -45,7 +45,6 @@ exportproc(f: chan of ref Sys->FD, dir: string, errorc: chan of string)
 	fd := <-f;
 	if(fd == nil)
 		reports->quit(errorc);
-	errorc <-= nil;
 	if(sys->export(fd, dir, Sys->EXPASYNC) == -1)
 		report(errorc, sys->sprint("cannot export: %r"));
 	reports->quit(errorc);
