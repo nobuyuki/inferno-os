@@ -42,12 +42,29 @@ typedef	struct Typelist	Typelist;
 typedef	double		Real;
 typedef	vlong		Long;
 
+/*
+ * The size of a word in the Dis code being produced is chosen when
+ * the compiler runs (-W), not when it is built: object files and
+ * the C declarations made by -a and -t differ for 32-bit and 64-bit
+ * words, and a native kernel for a 32-bit machine can be built on a
+ * 64-bit host.  The default is the word size of the host.
+ */
 enum
 {
-	STemp		= NREG * IBY2WD,
-	RTemp		= STemp+IBY2WD,
-	DTemp		= RTemp+IBY2WD,
-	MaxTemp		= DTemp+IBY2WD,
+	HOSTIBY2WD	= IBY2WD,
+};
+extern	int	wordsize;
+#define	IBY2WD	wordsize
+#define	XMAGIC	(wordsize == 4? XMAGIC32: XMAGIC64)
+#define	SMAGIC	(wordsize == 4? SMAGIC32: SMAGIC64)
+
+#define	STemp	(NREG * IBY2WD)
+#define	RTemp	(STemp+IBY2WD)
+#define	DTemp	(RTemp+IBY2WD)
+#define	MaxTemp	(DTemp+IBY2WD)
+
+enum
+{
 	MaxReg		= 1<<16,
 	MaxAlign	= IBY2LG,
 	StrSize		= 256,

@@ -10,7 +10,9 @@ installall:V: all
 clean nuke:V:
 	rm -f *.dis *.sbl
 
+#	native kernels are all for machines with 32-bit words
 INCLD=\
+	-W 32\
 	-I$ROOT/module\
 
 %.dis:	%.b

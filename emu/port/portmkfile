@@ -166,5 +166,13 @@ audio.c:N:	../port/audio.h
 srv.$O:			srv.h srvm.h
 srv.h srvm.h:D:		$ROOT/module/srvrunt.b $ROOT/module/srv.m
 			rm -f $alltarget
-			limbo -a -I$ROOT/module $ROOT/module/srvrunt.b >srv.h
-			limbo -t Srv -I$ROOT/module $ROOT/module/srvrunt.b >srvm.h
+			echo '#ifdef WORD64' > srv.h
+			limbo -W 64 -a -I$ROOT/module $ROOT/module/srvrunt.b >> srv.h
+			echo '#else' >> srv.h
+			limbo -W 32 -a -I$ROOT/module $ROOT/module/srvrunt.b >> srv.h
+			echo '#endif' >> srv.h
+			echo '#ifdef WORD64' > srvm.h
+			limbo -W 64 -t Srv -I$ROOT/module $ROOT/module/srvrunt.b >> srvm.h
+			echo '#else' >> srvm.h
+			limbo -W 32 -t Srv -I$ROOT/module $ROOT/module/srvrunt.b >> srvm.h
+			echo '#endif' >> srvm.h

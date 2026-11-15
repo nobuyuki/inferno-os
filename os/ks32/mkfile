@@ -106,9 +106,19 @@ dummy:V:
 
 # to be moved to port/interp 
 bench.h:D: ../../module/bench.m
-	rm -f $target && limbo -a -I../../module ../../module/bench.m > $target
+	rm -f $target
+	echo '#ifdef WORD64' > $target
+	limbo -W 64 -a -I../../module ../../module/bench.m >> $target
+	echo '#else' >> $target
+	limbo -W 32 -a -I../../module ../../module/bench.m >> $target
+	echo '#endif' >> $target
 benchmod.h:D:  ../../module/bench.m
-	rm -f $target && limbo -t Bench -I../../module ../../module/bench.m > $target
+	rm -f $target
+	echo '#ifdef WORD64' > $target
+	limbo -W 64 -t Bench -I../../module ../../module/bench.m >> $target
+	echo '#else' >> $target
+	limbo -W 32 -t Bench -I../../module ../../module/bench.m >> $target
+	echo '#endif' >> $target
 devbench.$O: bench.h benchmod.h
 
 devuart.$O:	devuart.c

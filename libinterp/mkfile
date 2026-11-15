@@ -55,48 +55,125 @@ MODULES=\
 
 <$ROOT/mkfiles/mksyslib-$SHELLTYPE
 
+#
+#	The C declarations that limbo makes from the modules depend on
+#	the size of a Dis word.  Each file holds both forms, chosen by
+#	WORD64 (see lib9.h), so that it is the same file whatever the
+#	host or the target, as the libraries built in this directory
+#	for different machines expect.
+#
 runt.h:D: $MODULES
-	rm -f $target && limbo -a -I../module ../module/runt.m > $target
+	rm -f $target
+	echo '#ifdef WORD64' > $target
+	limbo -W 64 -a -I../module ../module/runt.m >> $target
+	echo '#else' >> $target
+	limbo -W 32 -a -I../module ../module/runt.m >> $target
+	echo '#endif' >> $target
 
 sysmod.h:D: $MODULES
-	rm -f $target && limbo -t Sys -I../module ../module/runt.m > $target
+	rm -f $target
+	echo '#ifdef WORD64' > $target
+	limbo -W 64 -t Sys -I../module ../module/runt.m >> $target
+	echo '#else' >> $target
+	limbo -W 32 -t Sys -I../module ../module/runt.m >> $target
+	echo '#endif' >> $target
 
 keyring.h:D: $MODULES
-	rm -f $target && limbo -t Keyring -I../module keyringif.m > $target
+	rm -f $target
+	echo '#ifdef WORD64' > $target
+	limbo -W 64 -t Keyring -I../module keyringif.m >> $target
+	echo '#else' >> $target
+	limbo -W 32 -t Keyring -I../module keyringif.m >> $target
+	echo '#endif' >> $target
 
 drawmod.h:D: $MODULES
-	rm -f $target && limbo -t Draw -I../module ../module/runt.m > $target
+	rm -f $target
+	echo '#ifdef WORD64' > $target
+	limbo -W 64 -t Draw -I../module ../module/runt.m >> $target
+	echo '#else' >> $target
+	limbo -W 32 -t Draw -I../module ../module/runt.m >> $target
+	echo '#endif' >> $target
 
 prefabmod.h:D: $MODULES
-	rm -f $target && limbo -t Prefab -I../module ../module/runt.m > $target
+	rm -f $target
+	echo '#ifdef WORD64' > $target
+	limbo -W 64 -t Prefab -I../module ../module/runt.m >> $target
+	echo '#else' >> $target
+	limbo -W 32 -t Prefab -I../module ../module/runt.m >> $target
+	echo '#endif' >> $target
 
 tkmod.h:D: $MODULES
-	rm -f $target && limbo -t Tk -I../module ../module/runt.m > $target
+	rm -f $target
+	echo '#ifdef WORD64' > $target
+	limbo -W 64 -t Tk -I../module ../module/runt.m >> $target
+	echo '#else' >> $target
+	limbo -W 32 -t Tk -I../module ../module/runt.m >> $target
+	echo '#endif' >> $target
 
 mathmod.h:D: $MODULES
-	rm -f $target && limbo -t Math -I../module ../module/runt.m > $target
+	rm -f $target
+	echo '#ifdef WORD64' > $target
+	limbo -W 64 -t Math -I../module ../module/runt.m >> $target
+	echo '#else' >> $target
+	limbo -W 32 -t Math -I../module ../module/runt.m >> $target
+	echo '#endif' >> $target
 
 loadermod.h:D: $MODULES
-	rm -f $target && limbo -t Loader -I../module ../module/runt.m > $target
+	rm -f $target
+	echo '#ifdef WORD64' > $target
+	limbo -W 64 -t Loader -I../module ../module/runt.m >> $target
+	echo '#else' >> $target
+	limbo -W 32 -t Loader -I../module ../module/runt.m >> $target
+	echo '#endif' >> $target
 
 freetypemod.h:D: $MODULES
-	rm -f $target && limbo -t Freetype -I../module ../module/runt.m > $target
+	rm -f $target
+	echo '#ifdef WORD64' > $target
+	limbo -W 64 -t Freetype -I../module ../module/runt.m >> $target
+	echo '#else' >> $target
+	limbo -W 32 -t Freetype -I../module ../module/runt.m >> $target
+	echo '#endif' >> $target
 
 ipintsmod.h:D:	$MODULES
-	rm -f $target && limbo -t IPints -I../module ../module/ipints.m > $target
+	rm -f $target
+	echo '#ifdef WORD64' > $target
+	limbo -W 64 -t IPints -I../module ../module/ipints.m >> $target
+	echo '#else' >> $target
+	limbo -W 32 -t IPints -I../module ../module/ipints.m >> $target
+	echo '#endif' >> $target
 
 benchmod.h:D: ../module/bench.m
-	rm -f $target && limbo -t Bench -I../module ../module/bench.m > $target
+	rm -f $target
+	echo '#ifdef WORD64' > $target
+	limbo -W 64 -t Bench -I../module ../module/bench.m >> $target
+	echo '#else' >> $target
+	limbo -W 32 -t Bench -I../module ../module/bench.m >> $target
+	echo '#endif' >> $target
 
 cryptmod.h:D:	$MODULES
-	rm -f $target && limbo -t Crypt -I../module ../module/runt.m > $target
+	rm -f $target
+	echo '#ifdef WORD64' > $target
+	limbo -W 64 -t Crypt -I../module ../module/runt.m >> $target
+	echo '#else' >> $target
+	limbo -W 32 -t Crypt -I../module ../module/runt.m >> $target
+	echo '#endif' >> $target
 
 keyringif.h:D:	$MODULES keyringif.m
-	rm -f $target && limbo -a -I../module keyringif.m > $target
+	rm -f $target
+	echo '#ifdef WORD64' > $target
+	limbo -W 64 -a -I../module keyringif.m >> $target
+	echo '#else' >> $target
+	limbo -W 32 -a -I../module keyringif.m >> $target
+	echo '#endif' >> $target
 
 
 bench.h:D:../module/bench.m
-	rm -f $target && limbo -a -I../module ../module/bench.m > $target
+	rm -f $target
+	echo '#ifdef WORD64' > $target
+	limbo -W 64 -a -I../module ../module/bench.m >> $target
+	echo '#else' >> $target
+	limbo -W 32 -a -I../module ../module/bench.m >> $target
+	echo '#endif' >> $target
 
 xec.$O:		optab.h  $ROOT/include/pool.h
 tk.$O:		$ROOT/include/tk.h  $ROOT/include/pool.h

@@ -2,6 +2,8 @@
 #include "limbo.h"
 #include "y.tab.h"
 
+int	wordsize = HOSTIBY2WD;	/* bytes in a word of the Dis code produced */
+
 enum
 {
 	Leof		= -1,

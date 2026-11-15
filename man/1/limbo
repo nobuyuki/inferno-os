@@ -185,6 +185,18 @@ Suppresses normal output file generation.
 .B \-w
 Print warning messages about unused variables, etc.
 More \f5w\fP's (e.g., \f5\-ww\fP) increase the pedantry of the checking.
+.TP
+.BI \-W " bits"
+Produce code for a virtual machine with words of
+.I bits
+bits (32 or 64).
+The object files and the C declarations made by
+.B \-a
+and
+.B \-t
+differ for the two; an object file runs only on a system with words
+of the size it was compiled for.
+The default is the word size of the machine on which the compiler was built.
 .PP
 .SH FILES
 .TF /module

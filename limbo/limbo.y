@@ -1664,8 +1664,6 @@ main(int argc, char *argv[])
 	fmtinstall('v', expconv);		/* src expression */
 	fmtinstall('V', expconv);		/* src expression in '' */
 	lexinit();
-	typeinit();
-	optabinit();
 
 	gendis = 1;
 	asmsym = 0;
@@ -1773,6 +1771,17 @@ main(int argc, char *argv[])
 		superwarn = dowarn;
 		dowarn = 1;
 		break;
+	case 'W':
+		s = ARGF();
+		if(s == nil)
+			usage();
+		if(strcmp(s, "32") == 0)
+			wordsize = 4;
+		else if(strcmp(s, "64") == 0)
+			wordsize = 8;
+		else
+			usage();
+		break;
 	case 'x':
 		ext = ARGF();
 		break;
@@ -1789,6 +1798,10 @@ main(int argc, char *argv[])
 		usage();
 		break;
 	}ARGEND
+
+	/* after the options: the types need the word size */
+	typeinit();
+	optabinit();
 
 	if((root = getroot()) != nil){
 		char *r;
@@ -1834,7 +1847,7 @@ main(int argc, char *argv[])
 static void
 usage(void)
 {
-	fprint(2, "usage: limbo [-CGSacgwe] [-I incdir] [-o outfile] [-{T|t|d} module] [-D debug] file ...\n");
+	fprint(2, "usage: limbo [-CGSacgwe] [-I incdir] [-o outfile] [-{T|t|d} module] [-D debug] [-W 32|64] file ...\n");
 	exits("usage");
 }
 
