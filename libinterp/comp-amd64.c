@@ -118,6 +118,7 @@ enum
 	MacFRAM	= 4,
 	MacMFRA	= 5,
 	MacRELQ = 6,
+	MacCASE = 7,
 	NMACRO
 };
 
@@ -136,6 +137,7 @@ static	void	macmcal(void);
 static	void	macfram(void);
 static	void	macmfra(void);
 static	void	macrelq(void);
+static	void	maccase(void);
 static	ulong	macro[NMACRO];
 	void	(*comvec)(void);
 extern	void	das(uchar*, int);
@@ -157,6 +159,7 @@ struct
 	MacFRAM,	macfram,	/* frame instruction */
 	MacMFRA,	macmfra,	/* punt mframe because t->initialize==0 */
 	MacRELQ,	macrelq,	/* reschedule */
+	MacCASE,	maccase,	/* case instruction */
 };
 
 static void
@@ -1003,6 +1006,11 @@ comp(Inst *i)
 		punt(i, SRCOP|DBRAN|NEWPC|WRTPC, optab[i->op]);
 		break;
 	case ICASE:
+		comcase(i);
+		opwld(i, Oldq, RAX);			/* value */
+		opwst(i, Olea, RSI);			/* table */
+		rbra(macro[MacCASE], Ojmp);
+		break;
 	case ICASEC:
 		comcase(i);
 		punt(i, SRCOP|DSTOP|NEWPC, optab[i->op]);
@@ -1748,6 +1756,44 @@ macrelq(void)
 	genb(Opop+RAX);
 	modrm(Ostq, O(REG, PC), RREG, RAX);
 	leave();
+}
+
+/*
+ * binary search of the case table at SI for the value in AX:
+ * a count n, then n entries of low value, high value+1 and code address,
+ * then the address for the default (see icase in xec.c)
+ */
+static void
+maccase(void)
+{
+	uchar *loop, *done, *found, *l;
+
+	modrm(Oldq, 0, RSI, RCX);		/* n = t[0] */
+	modrm(Olea, IBY2WD, RSI, RSI);		/* t = &t[1] */
+	modsib(Olea, 0, RCX, RCX, 1, RDI);
+	modsib(Oldq, 0, RSI, RDI, 3, RDI);	/* DI = t[n*3], the default */
+	loop = code;
+	cmpi(RCX, 0);
+	done = jccb(CCLE);
+	modrr(Ostq, RDX, RCX);			/* n2 = n */
+	modrr(W|0xd1, RDX, 5);			/* n2 >>= 1 */
+	modsib(Olea, 0, RDX, RDX, 1, R8);
+	modsib(Olea, 0, RSI, R8, 3, R8);	/* l = &t[n2*3] */
+	modrm(W|0x3b, 0, R8, RAX);		/* CMPQ AX, l[0] */
+	l = jccb(CCGE);
+	modrr(Ostq, RCX, RDX);			/* n = n2 */
+	gen2(Ojmpb, loop-code-2);
+	label(l);
+	modrm(W|0x3b, IBY2WD, R8, RAX);		/* CMPQ AX, l[1] */
+	found = jccb(CCL);
+	modrm(Olea, 3*IBY2WD, R8, RSI);		/* t = l+3 */
+	modrr(W|0x2b, RDX, RCX);		/* n -= n2 */
+	modrr(W|0xff, RCX, 1);			/* n -= 1 */
+	gen2(Ojmpb, loop-code-2);
+	label(found);
+	modrm(0xff, 2*IBY2WD, R8, 4);		/* JMP* l[2] */
+	label(done);
+	gen2(0xff, (3<<6)|(4<<3)|RDI);		/* JMP* DI */
 }
 
 /* code to destroy the pointers in a frame of type t at RFP */
