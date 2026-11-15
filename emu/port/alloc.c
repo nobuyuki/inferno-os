@@ -67,6 +67,12 @@ struct
 	}
 };
 
+/*
+ * the size of the heap at which the collector is made
+ * to finish its work before programs go on
+ */
+static ulong heaphigh;
+
 Pool*	mainmem = &table.pool[0];
 Pool*	heapmem = &table.pool[1];
 Pool*	imagmem = &table.pool[2];
@@ -116,6 +122,42 @@ int
 memlow(void)
 {
 	return heapmem->cursize > (heapmem->maxsize)/2;
+}
+
+int
+memhigh(void)
+{
+	if(heaphigh == 0)
+		heaphigh = heapmem->maxsize/2;
+	return heapmem->cursize > heaphigh;
+}
+
+/*
+ * room left below the mark; after a full collection the mark
+ * is put half way between what is still in use and the limit
+ */
+ulong
+memroom(int collected)
+{
+	if(collected) {
+		heaphigh = heapmem->cursize;
+		if(heapmem->maxsize > heaphigh)
+			heaphigh += (heapmem->maxsize - heaphigh)/2;
+	}
+	if(heapmem->cursize >= heaphigh)
+		return 0;
+	return heaphigh - heapmem->cursize;
+}
+
+/*
+ * a program has gone, perhaps leaving a lot that only the collector
+ * can free: with little room left, have it collected straight away
+ */
+void
+memgone(void)
+{
+	if(heapmem->cursize > heapmem->maxsize/4*3)
+		heaphigh = 1;
 }
 
 int
@@ -377,6 +419,8 @@ dopoolalloc(Pool *p, ulong asize, ulong pc)
 			}
 
 			unlock(&p->l);
+			if(p == heapmem)
+				heaphigh = 1;	/* collect before anything else fails */
 			print("arena %s too large: size %d cursize %lud arenasize %lud maxsize %lud\n",
 			 p->name, size, p->cursize, p->arenasize, p->maxsize);
 			return nil;

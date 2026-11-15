@@ -204,6 +204,7 @@ delprog(Prog *p, char *msg)
 	Osenv *o;
 	Prog **ph;
 
+	memgone();		/* what it leaves might be needed at once */
 	tellsomeone(p, msg);	/* call before being removed from prog list */
 
 	o = p->osenv;
@@ -1012,6 +1013,28 @@ disfault(void *reg, char *msg)
 	oslongjmp(reg, up->estack[--up->nerr], 1);
 }
 
+/*
+ * the incremental collector has fallen behind programs that
+ * allocate quickly, and the heap is nearly full: collect all
+ * there is to collect now, rather than let an allocation fail
+ */
+static void
+gcfull(void)
+{
+	int done;
+
+	gcbusy++;
+	up->type = BusyGC;
+	pushrun(up->prog);
+	done = gccolor+3;
+	while(gccolor < done && gcruns())
+		rungc(isched.head);
+	up->type = Interp;
+	delrunq(up->prog);
+	gcnew = 0;
+	gclimit = memroom(1);
+}
+
 void
 vmachine(void *a)
 {
@@ -1042,6 +1065,9 @@ vmachine(void *a)
 			Sleep(&isched.irend, tready, 0);
 			strcpy(up->text, "dis");
 		}
+
+		if(memhigh())
+			gcfull();
 
 		if(isched.vmq != nil && (isched.runhd == nil || ++cycles > 2)){
 			iyield();
@@ -1075,6 +1101,9 @@ vmachine(void *a)
 			rungc(isched.head);
 			up->type = Interp;
 			delrunq(up->prog);
+			/* the allocator stops a program that gets as far as the mark */
+			gcnew = 0;
+			gclimit = memroom(0);
 		}
 	}
 }

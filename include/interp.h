@@ -398,6 +398,8 @@ extern	int	mutator;
 extern	int	nprop;
 extern	int	gchalt;
 extern	int	gccolor;
+extern	ulong	gcnew;
+extern	ulong	gclimit;
 extern	int	minvalid;
 
 extern	int		Dconv(Fmt*);

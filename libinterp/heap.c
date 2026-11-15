@@ -366,6 +366,9 @@ nheap(int n)
 	h = poolalloc(heapmem, sizeof(Heap)+n);
 	if(h == nil)
 		error(exHeap);
+	gcnew += sizeof(Heap)+n;
+	if(gcnew > gclimit)
+		R.IC = 1;	/* nearly full: stop at the next chance and let the collector catch up */
 
 	h->t = nil;
 	h->ref = 1;
@@ -384,6 +387,9 @@ heapz(Type *t)
 	h = poolalloc(heapmem, sizeof(Heap)+t->size);
 	if(h == nil)
 		error(exHeap);
+	gcnew += sizeof(Heap)+t->size;
+	if(gcnew > gclimit)
+		R.IC = 1;	/* nearly full: stop at the next chance and let the collector catch up */
 
 	h->t = t;
 	t->ref++;
@@ -405,6 +411,9 @@ heap(Type *t)
 	h = poolalloc(heapmem, sizeof(Heap)+t->size);
 	if(h == nil)
 		error(exHeap);
+	gcnew += sizeof(Heap)+t->size;
+	if(gcnew > gclimit)
+		R.IC = 1;	/* nearly full: stop at the next chance and let the collector catch up */
 
 	h->t = t;
 	t->ref++;
