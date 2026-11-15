@@ -18,7 +18,6 @@ include "bufio.m";
 	Iobuf:  import bufio;
 include "math.m";
 	maths: Math;
-	modf: import maths;
 
 init(nil: ref Draw->Context, argl: list of string)
 {
@@ -109,61 +108,41 @@ main(argc: int, argv: list of string)
 	exit;
 }
 
+# largest integer below which every integer is an exact real
+MAXN: con 9007199254740992.0;
+
+# divide n by d while it goes exactly; fmod and the division are exact for integers below MAXN
+divide(n, d: real): real
+{
+	while(n > real 1 && maths->fmod(n, d) == real 0){
+		sys->print("     %.0f\n", d);
+		n /= d;
+	}
+	return n;
+}
+
 factor(n: real)
 {
-	quot, d, s: real;
+	d, s: real;
 	i: int;
 
-	sys->print("%d\n", int n);
+	if(maths->isnan(n) || n < real 0 || n > MAXN || n != maths->floor(n)){
+		sys->fprint(sys->fildes(2), "factor: %g: not an integer in the range 0 to 2^53\n", n);
+		return;
+	}
+	sys->print("%.0f\n", n);
 	if(n == real 0)
 		return;
+	n = divide(n, real 2);
+	n = divide(n, real 3);
+	n = divide(n, real 5);
+	n = divide(n, real 7);
 	s = maths->sqrt(n)+real 1;
-	for(;;){
-		(iquot, frac) := modf(n/real 2);
-		if(frac != real 0)
-			break;
-		quot = real iquot;
-		sys->print("     2\n");
-		n = quot;
-		s = maths->sqrt(n)+real 1;
-	}
-	for(;;){
-		(iquot, frac) := modf(n/real 3);
-		if(frac != real 0)
-			break;
-		quot = real iquot;
-		sys->print("     3\n");
-		n = quot;
-		s = maths->sqrt(n)+real 1;
-	}
-	for(;;){
-		(iquot, frac) := modf(n/real 5);
-		if(frac != real 0)
-			break;
-		quot = real iquot;
-		sys->print("     5\n");
-		n = quot;
-		s = maths->sqrt(n)+real 1;
-	}
-	for(;;){
-		(iquot, frac) := modf(n/real 7);
-		if(frac != real 0)
-			break;
-		quot = real iquot;
-		sys->print("     7\n");
-		n = quot;
-		s = maths->sqrt(n)+real 1;
-	}
 	d = real 1;
 	for(i = 1;;){
 		d += wheel[i];
-		for(;;){
-			(iquot, frac) := modf(n/d);
-			if(frac != real 0)
-				break;
-			quot = real iquot;
-			sys->print("     %d\n", int d);
-			n = quot;
+		if(maths->fmod(n, d) == real 0){
+			n = divide(n, d);
 			s = maths->sqrt(n)+real 1;
 		}
 		i++;
@@ -174,7 +153,6 @@ factor(n: real)
 		}
 	}
 	if(n > real 1)
-		sys->print("     %d\n", int n);
+		sys->print("     %.0f\n", n);
 	sys->print("\n");
 }
-
