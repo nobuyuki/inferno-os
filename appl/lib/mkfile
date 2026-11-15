@@ -126,7 +126,7 @@ TARG=\
 	tftp.dis\
 	timers.dis\
 	tcl_utils.dis\
-#	tcl_tk.dis\
+	tcl_tk.dis\
 	tcl_symhash.dis\
 	tcl_string.dis\
 	tcl_strhash.dis\

@@ -29,6 +29,7 @@ LIB=\
 MAIN=\
 	archives.dis \
 	join.dis \
+	joinsession.dis \
 	spree.dis \
 
 MODULES=\

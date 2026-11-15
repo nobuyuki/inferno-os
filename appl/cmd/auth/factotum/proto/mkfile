@@ -2,6 +2,7 @@
 
 TARG=\
 	authquery.dis\
+	infauth.dis\
 	p9any.dis\
 	pass.dis\
 	rsa.dis\
@@ -18,7 +19,21 @@ SYSMODULES=\
 
 MODULES=\
 	../authio.m\
+	keyreps.m\
 
 DISBIN=$ROOT/dis/auth/proto
 
 <$ROOT/mkfiles/mkdis
+
+# keyreps is loaded from /dis/lib/spki (see keyreps.m)
+KEYREPS=$ROOT/dis/lib/spki/keyreps.dis
+
+all:V:	keyreps.dis
+
+install:V:	$KEYREPS
+
+$KEYREPS:	keyreps.dis
+	rm -f $KEYREPS && cp keyreps.dis $KEYREPS
+
+nuke:V:
+	rm -f $KEYREPS
