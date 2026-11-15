@@ -18,3 +18,9 @@ DIRS=\
 	wm\
 
 <$ROOT/mkfiles/mksubdirs
+
+# the directories for the object files must exist before anything is installed
+install-$SHELLTYPE:V:	disdirs
+
+disdirs:QV:
+	$SHELLNAME $ROOT/mkfiles/mkdisdir $ROOT $DISDIR $ACMEDIR

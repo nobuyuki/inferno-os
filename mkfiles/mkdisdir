@@ -1,0 +1,20 @@
+#!/bin/sh
+# usage: mkdisdir root disdir acmedir
+# Prepare the directories in which Dis object files will be installed.
+# The distribution provides root/dis and root/acme, populated for 32-bit
+# words; a target with another word size has its own (see mkconfig), which
+# need the same subdirectories and the files that are not object files.
+root=$1
+clone() {
+	src=$1 dst=$2
+	[ "$src" = "$dst" ] && return 0
+	(cd $root/$src && find . -type d) | while read d
+	do
+		mkdir -p "$root/$dst/$d" || exit 1
+	done
+	(cd $root/$src && find . -type f ! -name '*.dis' ! -name '*.sbl') | while read f
+	do
+		[ -f "$root/$dst/$f" ] || cp -p "$root/$src/$f" "$root/$dst/$f" || exit 1
+	done
+}
+clone dis $2 && clone acme $3
