@@ -16,6 +16,8 @@ SYSMODULES=\
 	draw.m\
 	tk.m\
 	dict.m\
+	tkclient.m\
+	translate.m\
 	string.m\
 	lock.m\
 
