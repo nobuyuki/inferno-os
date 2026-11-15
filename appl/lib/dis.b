@@ -222,13 +222,13 @@ loadobj(disfile: string): (ref Mod, string)
 	disptr = 0;
 	m := ref Mod;
 	m.magic = operand();
-	if(m.magic == SMAGIC) {
+	if(m.magic == SMAGIC || m.magic == SMAGIC64) {
 		n := operand();
 		m.sign = disobj[disptr:disptr+n];
 		disptr += n;
 		m.magic = operand();
 	}
-	if(m.magic != XMAGIC){
+	if(m.magic != XMAGIC && m.magic != XMAGIC64){
 		disobj = nil;
 		return (nil, "bad magic number");
 	}

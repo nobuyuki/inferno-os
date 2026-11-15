@@ -305,6 +305,7 @@ struct Module
 	Import**	ldt;	/* Internal linkage descriptor tables */
 	Handler*	htab;	/* Exception handler table */
 	ulong*	pctab;	/* dis pc to code pc when compiled */
+	ulong	ncode;		/* size of compiled code, if the compiler records it */
 	void*	dlm;		/* dynamic C module */
 };
 

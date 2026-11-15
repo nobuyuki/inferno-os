@@ -467,6 +467,16 @@ ccall(void *fn)
 	modrr(Ostq, RSP, RSAVE);		/* MOVQ RSAVE, SP */
 }
 
+/* raise a bounds error in instruction i, recording its pc for the handler */
+static void
+cbounds(Inst *i)
+{
+	leacode(patch[i-mod->prog+1], RAX);
+	modrm(Ostq, O(REG, PC), RREG, RAX);
+	modrm(Ostq, O(REG, FP), RREG, RFP);
+	ccall(bounds);
+}
+
 /* leave compiled code: return from comvec to xec */
 static void
 leave(void)
@@ -619,7 +629,11 @@ punt(Inst *i, int m, void (*fn)(void))
 			modrm(Ostq, O(REG, d), RREG, RAX);
 		}
 	}
-	if(m & WRTPC) {
+	/*
+	 * always record the pc, so that an exception raised by fn finds the
+	 * right handler (it is the next instruction's, as when interpreting)
+	 */
+	if(i >= mod->prog && i < mod->prog+mod->nprog) {
 		leacode(patch[i-mod->prog+1], RAX);
 		modrm(Ostq, O(REG, PC), RREG, RAX);
 	}
@@ -1423,9 +1437,12 @@ comp(Inst *i)
 		opwld(i, Oldq, RSI);			/* array */
 		opwst(i, Oldl, RAX);			/* index */
 		if(bflag){
+			cmph(RSI);			/* a nil array has no elements */
+			l1 = jccb(CCE);
 			modrm(0x3b, O(Array, len), RSI, RAX);	/* CMPL AX, len */
 			l = jccb(CCB);
-			ccall(bounds);
+			label(l1);
+			cbounds(i);
 			label(l);
 		}
 		modrm(Oldq, O(Array, t), RSI, RCX);
@@ -1445,9 +1462,12 @@ comp(Inst *i)
 		opwld(i, Oldq, RSI);			/* array */
 		opwst(i, Oldl, RAX);			/* index */
 		if(bflag){
+			cmph(RSI);			/* a nil array has no elements */
+			l1 = jccb(CCE);
 			modrm(0x3b, O(Array, len), RSI, RAX);	/* CMPL AX, len */
 			l = jccb(CCB);
-			ccall(bounds);
+			label(l1);
+			cbounds(i);
 			label(l);
 		}
 		modrm(Oldq, O(Array, data), RSI, RSI);
@@ -1463,7 +1483,7 @@ comp(Inst *i)
 		if(bflag){
 			modrr(0x3b, RCX, RAX);		/* CMPL AX, CX */
 			l1 = jccb(CCB);
-			ccall(bounds);
+			cbounds(i);
 			label(l1);
 		}
 		modsib(Oldzb, O(String, data), RSI, RAX, 0, RAX);
@@ -1473,7 +1493,7 @@ comp(Inst *i)
 			modrr(0xf7, RCX, 3);		/* NEGL CX */
 			modrr(0x3b, RCX, RAX);		/* CMPL AX, CX */
 			l = jccb(CCB);
-			ccall(bounds);
+			cbounds(i);
 			label(l);
 		}
 		modsib(Oldl, O(String, data), RSI, RAX, 2, RAX);	/* sizeof(Rune) == 4 */
@@ -1930,6 +1950,7 @@ compile(Module *m, int size, Modlink *ml)
 	free(tmp);
 	free(m->prog);
 	m->prog = (Inst*)base;
+	m->ncode = n;
 	m->compiled = 1;
 	segflush(base, n + nlit*sizeof(WORD));
 	return 1;

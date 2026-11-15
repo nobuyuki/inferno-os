@@ -19,6 +19,8 @@
 #include <semaphore.h>
 
 #pragma pop_macro("long")
+#include	<isa.h>
+#include	<interp.h>
 #include	<raise.h>
 
 /* glibc 2.3.3-NTPL messes up getpid() by trying to cache the result, so we'll do it ourselves */
@@ -55,6 +57,31 @@ sysfault(char *what, void *addr)
 	disfault(nil, buf);
 }
 
+/*
+ * If a fault happened in the code compiled for the current module,
+ * make R.PC say where, so that the right exception handler is found
+ * (as when interpreting, it must be just beyond the faulting instruction).
+ */
+static void
+faultpc(void *a)
+{
+#ifdef __x86_64__
+	Modlink *m;
+	uintptr pc;
+
+	if(up == nil || up->type != Interp)
+		return;
+	m = R.M;
+	if(m == nil || m == H || !m->compiled || m->m->ncode == 0)
+		return;
+	pc = ((ucontext_t*)a)->uc_mcontext.gregs[16];	/* REG_RIP */
+	if(pc >= (uintptr)m->prog && pc < (uintptr)m->prog+m->m->ncode)
+		R.PC = (Inst*)(pc+1);
+#else
+	USED(a);
+#endif
+}
+
 static void
 trapILL(int signo, siginfo_t *si, void *a)
 {
@@ -72,7 +99,7 @@ isnilref(siginfo_t *si)
 static void
 trapmemref(int signo, siginfo_t *si, void *a)
 {
-	USED(a);	/* ucontext_t*, could fetch pc in machine-dependent way */
+	faultpc(a);
 	if(isnilref(si))
 		disfault(nil, exNilref);
 	else if(signo == SIGBUS)
@@ -87,7 +114,7 @@ trapFPE(int signo, siginfo_t *si, void *a)
 	char buf[64];
 
 	USED(signo);
-	USED(a);
+	faultpc(a);
 	snprint(buf, sizeof(buf), "sys: fp: exception status=%.4lux pc=%#p", getfsr(), si->si_addr);
 	disfault(nil, buf);
 }

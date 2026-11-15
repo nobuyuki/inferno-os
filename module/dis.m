@@ -4,6 +4,8 @@ Dis: module
 
 	XMAGIC:		con	819248;
 	SMAGIC:		con	923426;
+	XMAGIC64:	con	819264;	# the same, for 64-bit words
+	SMAGIC64:	con	923464;
 	MUSTCOMPILE:	con	1<<0;
 	DONTCOMPILE:	con 	1<<1;
 	SHAREMP:	con 	1<<2;

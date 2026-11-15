@@ -291,6 +291,7 @@ Loader_newmod(void *a)
 	ml->MP = m->origmp;
 	m->origmp = H;
 	m->pctab = nil;
+	m->ncode = 0;
 	*f->ret = ml;
 	return;
 bad:

@@ -284,7 +284,7 @@ writedis()
 	outbuf := array[length+2*4] of byte;	# could avoid this buffer if required, by writing portions of disbuf
 	(magic, i) := operand(disbuf, 0);
 	o := putoperand(outbuf, magic);
-	if(magic == Dis->SMAGIC){
+	if(magic == Dis->SMAGIC || magic == Dis->SMAGIC64){
 		ns: int;
 		(ns, i) = operand(disbuf, i);
 		o += putoperand(outbuf[o:], ns);

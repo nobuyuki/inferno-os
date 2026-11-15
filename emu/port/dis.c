@@ -951,7 +951,7 @@ progexit(void)
 			char *pc = strstr(estr, "pc=");
 
 			if(pc != nil)
-				R.PC = r->R.PC = (Inst*)strtol(pc+3, nil, 0);	/* for debugging */
+				R.PC = r->R.PC = (Inst*)(uintptr)strtoull(pc+3, nil, 0);	/* for debugging */
 		}
 		print("[%s] Broken: \"%s\"\n", m->name, estr);
 	}

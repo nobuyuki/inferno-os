@@ -153,6 +153,7 @@ parsemod(char *path, uchar *code, ulong length, Dir *dir)
 	m->mtime = dir->mtime;
 	m->origmp = H;
 	m->pctab = nil;
+	m->ncode = 0;
 
 	switch(operand(isp)) {
 	default:
@@ -538,6 +539,7 @@ newmod(char *s)
 	m->link = modules;
 	modules = m;
 	m->pctab = nil;
+	m->ncode = 0;
 	return m;
 }
 
