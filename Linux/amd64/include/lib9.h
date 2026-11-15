@@ -62,6 +62,14 @@ typedef unsigned long uintptr;
 typedef long intptr;
 
 /*
+ * Dis words are 64 bits here (see include/interp.h).
+ * This is a macro tested with #ifdef because the headers that
+ * depend on it are also read by the Plan 9 compilers when they
+ * build native kernels, and their preprocessor has no #if.
+ */
+#define	WORD64
+
+/*
  * The code was written for a C in which long is 32 bits, as it
  * still is in Plan 9's own amd64 compiler: only pointers (and vlong)
  * are 64 bits.  Give it that model here, so that long and ulong

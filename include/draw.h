@@ -547,7 +547,7 @@ extern	void	font_close(Font*);
  * a cast is enough; when a word is wider (as on a 64-bit machine)
  * the Limbo ints are further apart, and the values must be converted.
  */
-#if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 8
+#ifdef WORD64
 #define	IRECT(r)	Rect((r).min.x, (r).min.y, (r).max.x, (r).max.y)
 #define	DRECT(r)	((Draw_Rect){{(r).min.x, (r).min.y}, {(r).max.x, (r).max.y}})
 #define	IPOINT(p)	Pt((p).x, (p).y)

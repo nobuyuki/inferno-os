@@ -5,7 +5,7 @@ typedef uchar		BYTE;		/* 8  bits */
  * A Limbo int occupies a WORD but is always a 32-bit value;
  * where WORD is wider, int is kept sign-extended in it.
  */
-#if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 8
+#ifdef WORD64
 typedef vlong		WORD;		/* 64 bits */
 typedef uvlong		UWORD;		/* 64 bits */
 #else
@@ -180,7 +180,7 @@ union Adr
 	WORD	ind;
 	Inst*	ins;
 	struct {
-#if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 8
+#ifdef WORD64
 		u32int	f;	/* First indirection */
 		u32int	s;	/* Second indirection */
 #else
