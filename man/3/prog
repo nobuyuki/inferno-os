@@ -220,6 +220,17 @@ The process is unblocked and now ready to run.
 .BI new " pid"
 The process has spawned a new process identified by
 .IR pid .
+The new process is left stopped, off the run queue,
+and does not run until a debugger opens its own
+.B dbgctl
+file and writes
+.BR start ,
+.B cont
+or a
+.B step
+request there.
+A process that waits for the new one therefore blocks for ever
+if the debugger ignores this update.
 .PP
 The read-only
 .B stack
