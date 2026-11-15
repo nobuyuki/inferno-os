@@ -44,11 +44,36 @@ TEXT _multibootheader(SB), $0
 	LONG	$_start0x80100020-KZERO(SB)	/* load_addr */
 	LONG	$edata-KZERO(SB)		/* load_end_addr */
 	LONG	$end-KZERO(SB)			/* bss_end_addr */
-	LONG	$_start0x80100020-KZERO(SB)	/* entry_addr */
+	LONG	$_multibootentry-KZERO(SB)	/* entry_addr */
 	LONG	$0				/* mode_type */
 	LONG	$0				/* width */
 	LONG	$0				/* height */
 	LONG	$0				/* depth */
+
+/*
+ * A multiboot loader copies the file as one piece, so the data segment
+ * lands just after the text instead of at the next page boundary,
+ * where the kernel was linked to find it.  Move it up, last byte first
+ * because the two ranges overlap.
+ */
+TEXT _multibootentry(SB), $0
+	CLI
+	MOVL	$etext-KZERO(SB), SI
+	MOVL	SI, DI
+	ADDL	$(BY2PG-1), DI
+	ANDL	$~(BY2PG-1), DI
+	MOVL	$edata-KZERO(SB), CX
+	SUBL	DI, CX
+	ADDL	CX, SI
+	ADDL	CX, DI
+	DECL	SI
+	DECL	DI
+	STD
+	REP;	MOVSB
+	CLD
+	MOVL	$_start0x00100020(SB), AX
+	ANDL	$~KZERO, AX
+	JMP*	AX
 
 /*
  * In protected mode with paging turned off and segment registers setup to linear map all memory.
