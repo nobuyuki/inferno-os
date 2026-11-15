@@ -6,6 +6,7 @@ TARG=	mash.dis\
 	builtins.dis\
 	history.dis\
 	make.dis\
+	tk.dis\
 
 INS=	$ROOT/dis/mash.dis\
 	$ROOT/dis/lib/mashlib.dis\
@@ -13,6 +14,7 @@ INS=	$ROOT/dis/mash.dis\
 	$ROOT/dis/lib/mash/builtins.dis\
 	$ROOT/dis/lib/mash/history.dis\
 	$ROOT/dis/lib/mash/make.dis\
+	$ROOT/dis/lib/mash/tk.dis\
 
 MODULES=\
 	mash.m\
@@ -20,13 +22,17 @@ MODULES=\
 
 SYSMODULES=\
 	bufio.m\
+	dialog.m\
 	draw.m\
 	filepat.m\
 	hash.m\
 	regex.m\
+	selectfile.m\
 	sh.m\
 	string.m\
 	sys.m\
+	tk.m\
+	tkclient.m\
 
 LIBSRC=\
 	depends.b\

@@ -26,12 +26,12 @@ implement Mashbuiltin;
 
 include	"mash.m";
 include	"mashparse.m";
-include	"wmlib.m";
+include	"tkclient.m";
 include	"dialog.m";
 include	"selectfile.m";
 
 mashlib:	Mashlib;
-wmlib:		Wmlib;
+tkclient:	Tkclient;
 dialog:	Dialog;
 selectfile:	Selectfile;
 
@@ -81,9 +81,9 @@ mashinit(nil: list of string, lib: Mashlib, this: Mashbuiltin, e: ref Env)
 		e.report("tk: not run from wmsh");
 		return;
 	}
-	wmlib = load Wmlib Wmlib->PATH;
-	if (wmlib == nil) {
-		e.report(sys->sprint("tk: could not load %s: %r", Wmlib->PATH));
+	tkclient = load Tkclient Tkclient->PATH;
+	if (tkclient == nil) {
+		e.report(sys->sprint("tk: could not load %s: %r", Tkclient->PATH));
 		return;
 	}
 	dialog = load Dialog Dialog->PATH;
@@ -96,7 +96,7 @@ mashinit(nil: list of string, lib: Mashlib, this: Mashbuiltin, e: ref Env)
 		e.report(sys->sprint("tk: could not load %s: %r", Selectfile->PATH));
 		return;
 	}
-	wmlib->init();
+	tkclient->init();
 	dialog->init();
 	selectfile->init();
 	e.defbuiltin("tk", this);
@@ -149,7 +149,7 @@ mashcmd(e: ref Env, l: list of string)
 			e.usage("tk geom");
 			return;
 		}
-		e.output(wmlib->geom(gtop));
+		e.output(geom(gtop, 20));
 	"layout" =>
 		layout(e, l);
 	"notice" =>
@@ -169,13 +169,13 @@ mashcmd(e: ref Env, l: list of string)
 			e.usage("tk sget");
 			return;
 		}
-		e.output(wmlib->snarfget());
+		e.output(tkclient->snarfget());
 	"sput" =>
 		if (len l != 1) {
 			e.usage("tk sput string");
 			return;
 		}
-		wmlib->snarfput(hd l);
+		tkclient->snarfput(hd l);
 	"string" =>
 		if (len l != 1) {
 			e.usage("tk string mesg");
@@ -188,7 +188,8 @@ mashcmd(e: ref Env, l: list of string)
 			e.usage("tk taskbar string");
 			return;
 		}
-		e.output(wmlib->taskbar(gtop, hd l));
+		e.output(tkclient->settitle(gtop, hd l));
+		tkcmd(e, "update");
 	"text" =>
 		if (l != nil) {
 			e.usage("tk text");
@@ -579,16 +580,47 @@ notice1 := array[] of
 
 notice(mesg: string)
 {
-	x := int tk->cmd(gtop, ". cget -x");
-	y := int tk->cmd(gtop, ". cget -y");
-	where := sys->sprint("-x %d -y %d", x + 30, y + 30);
-	t := tk->toplevel(gctxt.screen, where + " -borderwidth 2 -relief raised");
+	(t, wmctl) := tkclient->toplevel(gctxt, geom(gtop, 30) + " -borderwidth 2 -relief raised", nil, Tkclient->Plain);
 	cmd := chan of string;
 	tk->namechan(t, cmd, "cmd");
-	wmlib->tkcmds(t, notice0);
+	tkcmds(t, notice0);
 	tk->cmd(t, "label .f.f.m -text '" + mesg);
-	wmlib->tkcmds(t, notice1);
-	<- cmd;
+	tkcmds(t, notice1);
+	tkclient->onscreen(t, nil);
+	tkclient->startinput(t, "kbd" :: "ptr" :: nil);
+	for (;;) alt {
+	c := <-t.ctxt.kbd =>
+		tk->keyboard(t, c);
+	p := <-t.ctxt.ptr =>
+		tk->pointer(t, *p);
+	c := <-t.ctxt.ctl or
+	c = <-t.wreq =>
+		tkclient->wmctl(t, c);
+	c := <-wmctl =>
+		if (c == "exit")
+			return;
+		tkclient->wmctl(t, c);
+	<-cmd =>
+		return;
+	}
+}
+
+#
+#	Position for a new window, relative to the mash window.
+#
+geom(t: ref Tk->Toplevel, step: int): string
+{
+	if (t == nil)
+		return nil;
+	x := int tk->cmd(t, ". cget -actx");
+	y := int tk->cmd(t, ". cget -acty");
+	return sys->sprint("-x %d -y %d", x + step, y + step);
+}
+
+tkcmds(t: ref Tk->Toplevel, a: array of string)
+{
+	for (i := 0; i < len a; i++)
+		tk->cmd(t, a[i]);
 }
 
 dodialog(e: ref Env, l: list of string)
