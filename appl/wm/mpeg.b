@@ -15,6 +15,12 @@ include "tk.m";
 include	"tkclient.m";
 	tkclient: Tkclient;
 
+include	"dialog.m";
+	dialog: Dialog;
+
+include	"selectfile.m";
+	selectfile: Selectfile;
+
 include	"mpeg.m";
 	mpeg: Mpeg;
 
@@ -59,22 +65,35 @@ init(xctxt: ref Draw->Context, nil: list of string)
 	ctxt = xctxt;
 
 	tkclient->init();
+	dialog = load Dialog Dialog->PATH;
+	dialog->init();
+	selectfile = load Selectfile Selectfile->PATH;
+	selectfile->init();
 
-	(t, menubut)  := tkclient->toplevel(ctxt.screen, "", "Mpeg Player", Tkclient->Appl);
+	(t, menubut)  := tkclient->toplevel(ctxt, "", "Mpeg Player", Tkclient->Appl);
 
 	cmd := chan of string;
 	tk->namechan(t, cmd, "cmd");
 
-	tkclient->tkcmds(t, task_cfg);
+	tkcmds(t, task_cfg);
 
 	tk->cmd(t, "bind . <Configure> {send cmd resize}");
 	tk->cmd(t, "update");
+	tkclient->onscreen(t, nil);
+	tkclient->startinput(t, "kbd"::"ptr"::nil);
 
 	fname := "";
 	ctl := chan of string;
 	state := Stopped;
 
 	for(;;) alt {
+	s := <-t.ctxt.kbd =>
+		tk->keyboard(t, s);
+	s := <-t.ctxt.ptr =>
+		tk->pointer(t, *s);
+	s := <-t.ctxt.ctl or
+	s = <-t.wreq =>
+		tkclient->wmctl(t, s);
 	menu := <-menubut =>
 		if(menu == "exit") {
 			if(state == Playing) {
@@ -90,7 +109,7 @@ init(xctxt: ref Draw->Context, nil: list of string)
 			pat := list of {
 				"*.mpg (MPEG movie file)"
 			};
-			fname = tkclient->filename(ctxt.screen, t, "Locate MPEG clip", pat, "");
+			fname = selectfile->filename(ctxt, t.image, "Locate MPEG clip", pat, "");
 			if(fname != nil) {
 				tk->cmd(t, ".f.name configure -text {"+fname+"}");
 				tk->cmd(t, "update");
@@ -98,7 +117,7 @@ init(xctxt: ref Draw->Context, nil: list of string)
 		"play" =>
 			s := mpeg->play(ctxt.display, nil, 0, canvsize(t), fname, ctl);
 			if(s != nil) {
-				tkclient->dialog(t, "error -fg red", "Play MPEG",
+				dialog->prompt(ctxt, t.image, "error -fg red", "Play MPEG",
 					"Media player error:\n"+s,
 					0, "Stop Play"::nil);
 				break;
@@ -154,16 +173,23 @@ pict_cfg := array[] of {
 
 pict(parent: ref Toplevel)
 {
-	targ := +" -borderwidth 2 -relief raised";
-
-	(t, menubut) := tkclient->toplevel(ctxt.screen, tkclient->geom(parent), "Mpeg Picture", 0);
+	(t, menubut) := tkclient->toplevel(ctxt, geom(parent), "Mpeg Picture", 0);
 
 	pchan := chan of string;
 	tk->namechan(t, pchan, "c");
 
-	tkclient->tkcmds(t, pict_cfg);
+	tkcmds(t, pict_cfg);
+	tkclient->onscreen(t, nil);
+	tkclient->startinput(t, "kbd"::"ptr"::nil);
 
 	for(;;) alt {
+	s := <-t.ctxt.kbd =>
+		tk->keyboard(t, s);
+	s := <-t.ctxt.ptr =>
+		tk->pointer(t, *s);
+	s := <-t.ctxt.ctl or
+	s = <-t.wreq =>
+		tkclient->wmctl(t, s);
 	menu := <-menubut =>
 		if(menu == "exit") {
 			adjust = 0;
@@ -182,4 +208,19 @@ pict(parent: ref Toplevel)
 				r.min.x, r.min.y, r.max.x, r.max.y);
 		mpeg->ctl(s);
 	}
+}
+
+tkcmds(t: ref Toplevel, a: array of string)
+{
+	for(i := 0; i < len a; i++)
+		tk->cmd(t, a[i]);
+}
+
+geom(t: ref Toplevel): string
+{
+	if(t == nil)
+		return nil;
+	x := int tk->cmd(t, ". cget -actx");
+	y := int tk->cmd(t, ". cget -acty");
+	return sys->sprint("-x %d -y %d", x+20, y+20);
 }
