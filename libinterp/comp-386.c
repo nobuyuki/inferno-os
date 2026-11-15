@@ -1333,8 +1333,16 @@ comp(Inst *i)
 		if(i->op == IMULB)
 			gen2(0xf6, (3<<6)|(4<<3)|RTMP);
 		else {
-			genb(Ocdq);
-			gen2(0xf6, (3<<6)|(7<<3)|RTMP);	// IDIV AX, RTMP
+			/*
+			 * bytes are unsigned and only the low byte of each
+			 * register was loaded: widen both and divide as words
+			 */
+			genb(0x0f);
+			gen2(Omovzxb, (3<<6)|(RAX<<3)|RAX);	// MOVZX AL, AX
+			genb(0x0f);
+			gen2(Omovzxb, (3<<6)|(RTMP<<3)|RTMP);	// MOVZX BL, BX
+			gen2(0x31, (3<<6)|(RDX<<3)|RDX);	// XOR DX, DX
+			gen2(0xf7, (3<<6)|(6<<3)|RTMP);	// DIV AX, RTMP
 			if(i->op == IMODB)
 				genb(0x90+RDX);		// XCHG	AX, DX
 		}
