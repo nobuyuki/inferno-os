@@ -51,7 +51,7 @@ sizeproc(f: chan of ref Sys->FD, c: Entrychan, errorc: chan of string)
 	f <-= nil;
 	if((fd := <-f) == nil){
 		c.sync <-= 0;
-		exit;
+		reports->quit(errorc);
 	}
 	c.sync <-= 1;
 
