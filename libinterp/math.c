@@ -36,20 +36,20 @@ Math_import_int(void *fp)
 	int i, n;
 	unsigned int u;
 	unsigned char *bp;
-	int *x;
+	WORD *x;
 
 	f = fp;
 	n = f->x->len;
 	if(f->b->len!=4*n)
 		error(exMathia);
 	bp = (unsigned char *)(f->b->data);
-	x = (int*)(f->x->data);
+	x = (WORD*)(f->x->data);
 	for(i=0; i<n; i++){
 		u = *bp++;
 		u = (u<<8) | *bp++;
 		u = (u<<8) | *bp++;
 		u = (u<<8) | *bp++;
-		x[i] = u;
+		x[i] = (int)u;
 	}
 }
 
@@ -114,14 +114,14 @@ Math_export_int(void *fp)
 	int i, n;
 	unsigned int u;
 	unsigned char *bp;
-	int *x;
+	WORD *x;
 
 	f = fp;
 	n = f->x->len;
 	if(f->b->len!=4*n)
 		error(exMathia);
 	bp = (unsigned char *)(f->b->data);
-	x = (int*)(f->x->data);
+	x = (WORD*)(f->x->data);
 	for(i=0; i<n; i++){
 		u = x[i];
 		*bp++ = u>>24;
@@ -760,22 +760,23 @@ Math_yn(void *fp)
  char* has been changed to uchar*, static internal functions.
  specialized to swapping ints (which are 32-bit anyway in limbo).
  converted uchar* to int* (and substituted 1 for es).
+ the ints are those of a Limbo array, each of which occupies a WORD.
 */
 
 static int
-cmp(int *u, int *v, double *x)
+cmp(WORD *u, WORD *v, double *x)
 {
 	return ((x[*u]==x[*v])? 0 : ((x[*u]<x[*v])? -1 : 1));
 }
 
-#define swap(u, v) {int t = *(u); *(u) = *(v); *(v) = t;}
+#define swap(u, v) {WORD t = *(u); *(u) = *(v); *(v) = t;}
 
 #define vecswap(u, v, n) if(n>0){	\
     int i = n;				\
-    register int *pi = u;		\
-    register int *pj = v;		\
+    register WORD *pi = u;		\
+    register WORD *pj = v;		\
     do {				\
-        register int t = *pi;		\
+        register WORD t = *pi;		\
         *pi++ = *pj;			\
         *pj++ = t;			\
     } while (--i > 0);			\
@@ -783,17 +784,17 @@ cmp(int *u, int *v, double *x)
 
 #define minimum(x, y) ((x)<=(y) ? (x) : (y))
 
-static int *
-med3(int *a, int *b, int *c, double *x)
+static WORD *
+med3(WORD *a, WORD *b, WORD *c, double *x)
 {	return cmp(a, b, x) < 0 ?
 		  (cmp(b, c, x) < 0 ? b : (cmp(a, c, x) < 0 ? c : a ) )
 		: (cmp(b, c, x) > 0 ? b : (cmp(a, c, x) < 0 ? a : c ) );
 }
 
 void
-rqsort(int *a, int n, double *x)
+rqsort(WORD *a, int n, double *x)
 {
-	int *pa, *pb, *pc, *pd, *pl, *pm, *pn;
+	WORD *pa, *pb, *pc, *pd, *pl, *pm, *pn;
 	int  d, r;
 
 	if (n < 7) { /* Insertion sort on small arrays */
@@ -842,12 +843,13 @@ void
 Math_sort(void*fp)
 {
 	F_Math_sort *f;
-	int	i, pilen, xlen, *p;
+	int	i, pilen, xlen;
+	WORD	*p;
 
 	f = fp;
 
 	/* check that permutation contents are in [0,n-1] !!! */
-	p = (int*) (f->pi->data);
+	p = (WORD*) (f->pi->data);
 	pilen = f->pi->len;
 	xlen = f->x->len - 1;
 
@@ -857,7 +859,7 @@ Math_sort(void*fp)
 		p++;
 	}
 
-	rqsort( (int*)(f->pi->data), f->pi->len, (double*)(f->x->data));
+	rqsort( (WORD*)(f->pi->data), f->pi->len, (double*)(f->x->data));
 }
 
 

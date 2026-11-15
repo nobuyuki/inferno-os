@@ -826,7 +826,7 @@ Sys_pctl(void *fp)
 		lock(&ofg->l);
 		/* file descriptors to preserve */
 		for(l = f->movefd; l != H; l = l->tail) {
-			fd = *(int*)l->data;
+			fd = *(WORD*)l->data;
 			if(fd >= 0 && fd <= ofg->maxfd) {
 				c = ofg->fd[fd];
 				if(c != nil && fd < nfg->nfd && nfg->fd[fd] == nil) {
@@ -847,7 +847,7 @@ Sys_pctl(void *fp)
 		fg = dupfgrp(ofg);
 		/* file descriptors to close */
 		for(l = f->movefd; l != H; l = l->tail)
-			kclose(*(int*)l->data);
+			kclose(*(WORD*)l->data);
 		o->fgrp = fg;
 		closefgrp(ofg);
 	}
