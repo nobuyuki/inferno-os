@@ -41,6 +41,12 @@ initbuiltin(ctxt: ref Sh->Context, shmod: Sh): string
 	alphabet->init();
 	alphabet->setautodeclare(1);
 
+	# the shell has no way of telling us that it is going away,
+	# so watch the process that loaded us and clean up after it.
+	pid := sys->pctl(0, nil);
+	if(sys->stat(progstatus(pid)).t0 != -1)
+		spawn exitwatch(pid);
+
 	if((decls := ctxt.get("autodeclares")) != nil){
 		for(; decls != nil; decls = tl decls){
 			d := hd decls;
@@ -399,6 +405,22 @@ word(n: ref Listnode): string
 	if (n.cmd != nil)
 		n.word = sh->cmd2string(n.cmd);
 	return n.word;
+}
+
+progstatus(pid: int): string
+{
+	return "#p/"+string pid+"/status";
+}
+
+# when the shell that loaded us has gone, nothing will use
+# the current typesets and modules again: tell their processes to exit.
+# otherwise they stay for ever, and keep emu alive when everything else has finished.
+exitwatch(pid: int)
+{
+	f := progstatus(pid);
+	while(sys->stat(f).t0 != -1)
+		sys->sleep(250);
+	alphabet->quit();
 }
 
 printerrors(c: chan of string)
