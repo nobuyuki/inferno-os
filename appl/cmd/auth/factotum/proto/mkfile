@@ -26,7 +26,7 @@ DISBIN=$ROOT/$DISDIR/auth/proto
 <$ROOT/mkfiles/mkdis
 
 # keyreps is loaded from /dis/lib/spki (see keyreps.m)
-KEYREPS=$ROOT/dis/lib/spki/keyreps.dis
+KEYREPS=$ROOT/$DISDIR/lib/spki/keyreps.dis
 
 all:V:	keyreps.dis
 
