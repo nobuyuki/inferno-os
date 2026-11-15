@@ -536,7 +536,7 @@ pickadtstub(Type *t)
 	for(tg = t->tags; tg != nil; tg = tg->next)
 		print("#define %s_%s %ld\n", buf, tg->sym->name, offset++);
 	print("struct %s\n{\n", buf);
-	print("	int	pick;\n");
+	print("	WORD	pick;\n");	/* the tag is a word in Dis memory */
 	offset = IBY2WD;
 	for(id = t->ids; id != nil; id = id->next){
 		if(id->store == Dfield){

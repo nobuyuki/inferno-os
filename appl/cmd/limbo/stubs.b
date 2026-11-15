@@ -521,7 +521,7 @@ pickadtstub(t: ref Type)
 	for(tg = t.tags; tg != nil; tg = tg.next)
 		print("#define %s_%s %d\n", buf, tg.sym.name, offset++);
 	print("struct %s\n{\n", buf);
-	print("	int	pick;\n");
+	print("	WORD	pick;\n");
 	offset = IBY2WD;
 	for(id = t.ids; id != nil; id = id.next){
 		if(id.store == Dfield){
