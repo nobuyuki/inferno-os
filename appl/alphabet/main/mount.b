@@ -71,6 +71,7 @@ mountproc(r: chan of string, w: chan of ref Sys->FD, dir, aname: string, flag: i
 	if(sys->mount(fd, nil, dir, flag, aname) == -1){
 		e := sys->sprint("mount error on %#q: %r", dir);
 		report(errorc, e);
+		errorc <-= nil;
 		r <-= e;
 		exit;
 	}
