@@ -1,0 +1,28 @@
+Notes on the amd64-port branch
+==============================
+
+This file records things about this branch that cannot be seen by
+looking at the tree alone.  (To be extended when the branch is published.)
+
+Removed binaries without source
+-------------------------------
+
+Upstream tracks the compiled dis/ tree in git, and it contained modules
+whose Limbo source is no longer in the tree.  They cannot be rebuilt,
+neither for the 32-bit dis/ nor for the 64-bit dis64/, and nothing in
+the tree loads them, so this branch removed them:
+
+	dis/acme/guiwm.dis
+	dis/alphabet/main/env.dis
+	dis/alphabet/mktypeset.dis
+	dis/auth/sign.dis
+	dis/fs/join.dis		(built from /appl/cmd/fs/join.b, since removed)
+	dis/fs/merge2.dis
+	dis/lib/regexutils.dis
+	dis/sh/shmk.dis
+
+They are still in upstream's history.  To get one back:
+
+	git show 36616fe5:dis/sh/shmk.dis > dis/sh/shmk.dis
+
+(36616fe5 is the upstream master this branch started from.)
