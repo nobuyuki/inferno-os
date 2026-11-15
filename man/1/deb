@@ -170,3 +170,9 @@ Code that has been JITed, the compilation execution method, yields
 stack information that does not correspond to information in the symbol
 .RB ( .sbl )
 file.
+When the system is compiling the modules it loads,
+.I deb
+has the module it starts loaded for interpretation,
+but a module that is already in use in compiled form,
+and the modules the program loads itself, stay compiled:
+they are stepped over, not through.

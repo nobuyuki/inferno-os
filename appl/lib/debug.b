@@ -122,9 +122,33 @@ prog(pid: int): (ref Prog, string)
 	return (ref Prog(pid, h, c, d, s), "");
 }
 
+#
+# only interpreted code can be stepped: when the system compiles
+# the modules it loads, have this one left as it is.
+# (this module itself is marked not to be compiled, see the mkfile,
+# so that the spawn in execer is seen by the debugging interface.)
+#
+loadcmd(dis: string): Command
+{
+	jit := "0";
+	fd := sys->open("/dev/jit", Sys->ORDWR);
+	if(fd != nil){
+		buf := array[8] of byte;
+		n := sys->read(fd, buf, len buf);
+		if(n > 0)
+			jit = string buf[:n];
+		if(jit != "0")
+			sys->fprint(fd, "0");
+	}
+	c := load Command dis;
+	if(jit != "0")
+		sys->fprint(fd, "%s", jit);
+	return c;
+}
+
 startprog(dis, dir: string, ctxt: ref Draw->Context, argv: list of string): (ref Prog, string)
 {
-	c := load Command dis;
+	c := loadcmd(dis);
 	if(c == nil)
 		return (nil, "module not loaded");
 

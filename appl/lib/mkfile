@@ -214,6 +214,10 @@ DISBIN=$ROOT/$DISDIR/lib
 <$ROOT/mkfiles/mkdis
 <$ROOT/mkfiles/mksubdirs
 
+# the debugger has to be interpreted itself to catch the program it starts
+debug.dis:	debug.b
+	limbo $LIMBOFLAGS -C -gw debug.b
+
 plumbing.dis:N: plumbing.m
 plumber.dis:N: plumbing.m
 
