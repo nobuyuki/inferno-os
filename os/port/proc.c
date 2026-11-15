@@ -104,7 +104,7 @@ sched(void)
 void
 ready(Proc *p)
 {
-	int s;
+	int s, pri;
 	Schedq *rq;
 
 	s = splhi();
@@ -114,7 +114,9 @@ ready(Proc *p)
 		return;
 	}
 */
-	rq = &runq[p->pri];
+	/* lock() changes up->pri, and p can be up */
+	pri = p->pri;
+	rq = &runq[pri];
 	lock(runq);
 	p->rnext = 0;
 	if(rq->tail)
@@ -124,7 +126,7 @@ ready(Proc *p)
 	rq->tail = p;
 
 	nrdy++;
-	occupied |= 1<<p->pri;
+	occupied |= 1<<pri;
 	p->state = Ready;
 	unlock(runq);
 	splx(s);
@@ -195,7 +197,7 @@ loop:
 		rq->head = p->rnext;
 	if(rq->head == nil){
 		rq->tail = nil;
-		occupied &= ~(1<<p->pri);
+		occupied &= ~(1<<(rq-runq));
 	}
 	nrdy--;
 	if(p->dbgstop){
