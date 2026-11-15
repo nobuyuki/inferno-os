@@ -1,7 +1,6 @@
 <../../../mkconfig
 
 TARG=\
-	mktypeset.dis\
 	abc.dis\
 	abctypes.dis\
 	fs.dis\
@@ -28,7 +27,7 @@ DISBIN=$ROOT/$DISDIR/alphabet
 
 <$ROOT/mkfiles/mkdis
 
-LIMBOFLAGS=$LIMBOFLAGS -i -F
+LIMBOFLAGS=-I$MODDIR/alphabet $LIMBOFLAGS -i -F
 
 #%.b %types.b %.m %types.m: %.typeset
 #	mktypeset $stem.typeset

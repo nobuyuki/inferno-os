@@ -1,9 +1,11 @@
 <../../mkconfig
 
 DIRS=\
+	asm\
 	auth\
 	auxi\
 	avr\
+	dbm\
 	disk\
 	fs\
 	install\
@@ -15,6 +17,7 @@ DIRS=\
 	mpc\
 	ndb\
 	owen\
+	palm\
 	scheduler\
 	sh\
 	spki\
