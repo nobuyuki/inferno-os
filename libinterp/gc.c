@@ -24,6 +24,8 @@ struct Ptrhash
 	int	mflag;
 	int	mutator = 0;
 	int	gccolor = 3;
+	ulong	gcnew;			/* bytes allocated since the scheduler last looked */
+	ulong	gclimit = ~0UL;		/* gcnew beyond which a program gives way to the collector */
 
 	ulong	gcnruns;
 	ulong	gcsweeps;
