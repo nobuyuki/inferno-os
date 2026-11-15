@@ -304,7 +304,7 @@ struct Module
 	Link*	ext;		/* External dynamic links */
 	Import**	ldt;	/* Internal linkage descriptor tables */
 	Handler*	htab;	/* Exception handler table */
-	ulong*	pctab;	/* dis pc to code pc when compiled */
+	ulong*	pctab;	/* dis pc to code pc when compiled: nprog+1 offsets, or nil */
 	ulong	ncode;		/* size of compiled code, if the compiler records it */
 	void*	dlm;		/* dynamic C module */
 };

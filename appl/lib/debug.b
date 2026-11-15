@@ -71,7 +71,7 @@ treal:		ref Type;
 tstring:	ref Type;
 tpoly:	ref Type;
 
-IBY2WD:		con 4;
+IBY2WD:=	4;		# size of a Dis word: set by init for the machine we are running on
 IBY2LG:		con 8;
 H:		con int 16rffffffff;
 
@@ -92,6 +92,7 @@ init(): int
 	str = load String String->PATH;
 	if(sys == nil || str == nil)
 		return 0;
+	IBY2WD = wordsize();
 	tnone = ref Type(nil, Tnone, 0, "", nil, nil, nil);
 	tnil = ref Type(nil, Tnil, IBY2WD, "nil", nil, nil, nil);
 	tint = ref Type(nil, Tint, IBY2WD, "int", nil, nil, nil);
@@ -206,7 +207,7 @@ execer(ack: chan of int, dir: string, c: Command, ctxt: ref Draw->Context, args:
 
 # format of each line is
 # fp pc mp prog compiled path
-# fp, pc, mp, and prog are %.8lux
+# fp, pc, mp, and prog are in hexadecimal, at least 8 digits each
 # compile is  or 1
 # path is a string
 Prog.stack(p: self ref Prog): (array of ref Exp, string)
@@ -233,10 +234,18 @@ Prog.stack(p: self ref Prog): (array of ref Exp, string)
 		t = strchr(buf, s, '\n');
 		if(buf[t] != byte '\n' || t-s < 40)
 			continue;
+		# the width of the addresses depends on the machine
+		(fp, o) := hexfield(buf, s);
+		pc, mp, code: big;
+		(pc, o) = hexfield(buf, o);
+		(mp, o) = hexfield(buf, o);
+		(code, o) = hexfield(buf, o);
+		if(o+2 > t)
+			continue;
 		e[nf] = ref Exp("unknown fn",
-				hex(buf[s+0:s+8]), 
-				hex(buf[s+9:s+17]),
-				mkmod(hex(buf[s+18:s+26]), hex(buf[s+27:s+35]), buf[36] != byte '0', string buf[s+38:t]),
+				fp,
+				int pc,
+				mkmod(mp, code, buf[o] != byte '0', string buf[o+2:t]),
 				p,
 				nil);
 		nf++;
@@ -527,17 +536,17 @@ Exp.expand(e: self ref Exp): array of ref Exp
 			if(tg < 0 || tg > len et.tags || err != "" )
 				return nil;
 			k := array[1 + len ids + len et.tags[tg].ids] of ref Exp;
-			k[0] = ref Exp(et.tags[tg].name, off+0, e.pc, e.m, e.p, ref Id(et.src, et.tags[tg].name, 0, 0, tint));
+			k[0] = ref Exp(et.tags[tg].name, off, e.pc, e.m, e.p, ref Id(et.src, et.tags[tg].name, 0, 0, tint));
 			x := 1;
 			for(i := 0; i < len ids; i++){
 				id := ids[i];
-				k[i+x] = ref Exp(id.name, off+id.offset, e.pc, e.m, e.p, id);
+				k[i+x] = ref Exp(id.name, off+big id.offset, e.pc, e.m, e.p, id);
 			}
 			x += len ids;
 			ids = et.tags[tg].ids;
 			for(i = 0; i < len ids; i++){
 				id := ids[i];
-				k[i+x] = ref Exp(id.name, off+id.offset, e.pc, e.m, e.p, id);
+				k[i+x] = ref Exp(id.name, off+big id.offset, e.pc, e.m, e.p, id);
 			}
 			return k;
 		}
@@ -559,7 +568,7 @@ Exp.expand(e: self ref Exp): array of ref Exp
 		n := int sn;
 		if(sa == "" || n <= 0)
 			return nil;
-		(off, nil) = str->toint(sa[1:], 16);
+		off = hex(array of byte sa[1:]);
 		et := t.Of;
 		if(et.kind == Tid)
 			et = e.m.sym.adts[int et.name];
@@ -568,7 +577,7 @@ Exp.expand(e: self ref Exp): array of ref Exp
 			k := array[n] of ref Exp;
 			for(i := 0; i < n; i++){
 				name := string i;
-				k[i] = ref Exp(name, off+i*esize, e.pc, e.m, e.p, ref Id(nil, name, H, H, et));
+				k[i] = ref Exp(name, off+big (i*esize), e.pc, e.m, e.p, ref Id(nil, name, H, H, et));
 			}
 			return k;
 		}
@@ -583,7 +592,7 @@ Exp.expand(e: self ref Exp): array of ref Exp
 				if (--r >= 0)
 					ub++;
 				name := string lb + ".." + string ub;
-				k[i] = ref Exp(name, off+lb*esize, e.pc, e.m, e.p, ref Id(nil, name, H, H, st));
+				k[i] = ref Exp(name, off+big (lb*esize), e.pc, e.m, e.p, ref Id(nil, name, H, H, st));
 				lb = ub+1;
 			}
 			return k;	
@@ -601,7 +610,7 @@ Exp.expand(e: self ref Exp): array of ref Exp
 			k := array[n] of ref Exp;
 			for(i := 0; i < n; i++){
 				name := string (i+lb);
-				k[i] = ref Exp(name, off+i*esize, e.pc, e.m, e.p, ref Id(nil, name, H, H, et));
+				k[i] = ref Exp(name, off+big (i*esize), e.pc, e.m, e.p, ref Id(nil, name, H, H, et));
 			}
 			return k;
 		}
@@ -616,7 +625,7 @@ Exp.expand(e: self ref Exp): array of ref Exp
 				if (--r >= 0)
 					ub++;
 				name := string lb + ".." + string ub;
-				k[i] = ref Exp(name, off+(lb-lb0)*esize, e.pc, e.m, e.p, ref Id(nil, name, H, H, st));
+				k[i] = ref Exp(name, off+big ((lb-lb0)*esize), e.pc, e.m, e.p, ref Id(nil, name, H, H, st));
 				lb = ub+1;
 			}
 			return k;
@@ -629,7 +638,7 @@ Exp.expand(e: self ref Exp): array of ref Exp
 		n := int sn;
 		if(sa == "" || n <= 0)
 			return nil;
-		(off, nil) = str->toint(sa[1:], 16);
+		off = hex(array of byte sa[1:]);
 		(nil, sa) = str->splitl(sa[1:], ".");
 		(sn, sa) = str->splitl(sa[1:], ".");
 		f := int sn;
@@ -642,7 +651,7 @@ Exp.expand(e: self ref Exp): array of ref Exp
 		for(i := 0; i < sz; i++){
 			name := string i;
 			j := (f+i)%n;
-			k[i] = ref Exp(name, off+j*esize, e.pc, e.m, e.p, ref Id(nil, name, H, H, et));
+			k[i] = ref Exp(name, off+big (j*esize), e.pc, e.m, e.p, ref Id(nil, name, H, H, et));
 		}
 		return k;
 	* =>
@@ -651,7 +660,7 @@ Exp.expand(e: self ref Exp): array of ref Exp
 	k := array[len ids] of ref Exp;
 	for(i := 0; i < len k; i++){
 		id := ids[i];
-		k[i] = ref Exp(id.name, off+id.offset, e.pc, e.m, e.p, id);
+		k[i] = ref Exp(id.name, off+big id.offset, e.pc, e.m, e.p, id);
 	}
 	return k;
 }
@@ -704,7 +713,7 @@ Exp.val(e: self ref Exp): (string, int)
 		w = 1;
 	Tslice =>
 		(lb, ub) := bounds(e.name);
-		s = sys->sprint("[:%d] @ %x", ub-lb+1, e.offset);
+		s = sys->sprint("[:%d] @ %bx", ub-lb+1, e.offset);
 		w = 1;
 	Tstring =>
 		n : int;
@@ -859,7 +868,7 @@ Module.stdsym(m: self ref Module)
 	(m.sym, nil) = sym(path);
 }
 
-mkmod(data, code, comp: int, dis: string): ref Module
+mkmod(data, code: big, comp: int, dis: string): ref Module
 {
 	h := 0;
 	for(i := 0; i < len dis; i++)
@@ -879,9 +888,9 @@ mkmod(data, code, comp: int, dis: string): ref Module
 	return m;
 }
 
-pdata(p: ref Prog, a: int, fmt: string): (string, string)
+pdata(p: ref Prog, a: big, fmt: string): (string, string)
 {
-	b := array of byte sprint("0x%ux.%s1", a, fmt);
+	b := array of byte sprint("0x%bux.%s1", a, fmt);
 	if(sys->write(p.heap, b, len b) != len b)
 		return ("", sprint("can't write heap: %r"));
 
@@ -893,9 +902,9 @@ pdata(p: ref Prog, a: int, fmt: string): (string, string)
 	return (string buf[:n-1], "");
 }
 
-pstring0(p: ref Prog, a: int, blen: int): (int, string, string)
+pstring0(p: ref Prog, a: big, blen: int): (int, string, string)
 {
-	b := array of byte sprint("0x%ux.C1", a);
+	b := array of byte sprint("0x%bux.C1", a);
 	if(sys->write(p.heap, b, len b) != len b)
 		return (-1, "", sprint("can't write heap: %r"));
 
@@ -911,7 +920,7 @@ pstring0(p: ref Prog, a: int, blen: int): (int, string, string)
 	return (int string buf[0:m], string buf[m:n], "");
 }
 
-pstring(p: ref Prog, a: int): (int, string, string)
+pstring(p: ref Prog, a: big): (int, string, string)
 {
 	m, n: int;
 	s, err: string;
@@ -1457,18 +1466,46 @@ strtoi(a: array of byte, start: int): (int, int)
 	return (n, p);
 }
 
-hex(a: array of byte): int
+hex(a: array of byte): big
 {
-	n := 0;
+	n := big 0;
 	for(i := 0; i < len a; i++){
 		c := int a[i];
 		if(c >= '0' && c <= '9')
 			c -= '0';
 		else
 			c -= 'a' - 10;
-		n = (n << 4) + (c & 15);
+		n = (n << 4) + big (c & 15);
 	}
 	return n;
+}
+
+#
+# a hexadecimal number starting at a[i], and the index beyond the space that follows it
+#
+hexfield(a: array of byte, i: int): (big, int)
+{
+	for(j := i; j < len a && a[j] != byte ' ' && a[j] != byte '\n' && a[j] != byte 0; j++)
+		;
+	return (hex(a[i:j]), j+1);
+}
+
+#
+# the size of a word in the running system is implied by the kind of
+# Dis object file it accepts: look at this module's own
+#
+wordsize(): int
+{
+	fd := sys->open(PATH, Sys->OREAD);
+	if(fd == nil)
+		return 4;
+	b := array[4] of byte;
+	if(sys->read(fd, b, len b) != len b || (int b[0] & 16rC0) != 16rC0)
+		return 4;
+	magic := (int b[0] & 16r3F)<<24 | int b[1]<<16 | int b[2]<<8 | int b[3];
+	if(magic == Dis->XMAGIC64 || magic == Dis->SMAGIC64)
+		return 8;
+	return 4;
 }
 
 partition(n : int, max : int) : (int, int, int)

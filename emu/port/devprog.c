@@ -526,21 +526,22 @@ pc2dispc(Inst *pc, Module *mod)
 	ulong l, u, m, v;
 	ulong *tab = mod->pctab;
 
+	/*
+	 * tab has the offset of the code for each instruction,
+	 * and finally the offset of the end of the code.
+	 * find the last entry not beyond pc.
+	 */
 	v = (uintptr)pc - (uintptr)mod->prog;
 	l = 0;
-	u = mod->nprog-1;
+	u = mod->nprog;
 	while(l < u){
 		m = (l+u+1)/2;
-		if(tab[m] < v)
+		if(tab[m] <= v)
 			l = m;
-		else if(tab[m] > v)
-			u = m-1;
 		else
-			l = u = m;
+			u = m-1;
 	}
-	if(l == u && tab[u] <= v && u != mod->nprog-1 && tab[u+1] > v)
-		return &mod->prog[u];
-	return 0;
+	return &mod->prog[l];
 }
 
 static int
@@ -563,8 +564,11 @@ progstack(REG *reg, int state, char *va, int count, long offset)
 	 */
 	if(!m->compiled && state != Pready && state != Pdebug && pc > m->prog)
 		pc--;
-	if(m->compiled && m->m->pctab != nil)
-		pc = pc2dispc(pc, m->m);
+	if(m->compiled && m->m->pctab != nil){
+		pc = pc2dispc(pc, m->m);	/* as when interpreting, it is the next instruction */
+		if(pc > m->prog)
+			pc--;
+	}
 
 	while(fp != nil) {
 		f = (Frame*)fp;

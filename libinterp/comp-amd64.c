@@ -1904,7 +1904,7 @@ compile(Module *m, int size, Modlink *ml)
 	uchar *s, *tmp;
 
 	base = nil;
-	patch = mallocz(size*sizeof(*patch), 0);
+	patch = mallocz((size+1)*sizeof(*patch), 0);	/* one more for the end of the code */
 	tinit = malloc(m->ntype*sizeof(*tinit));
 	tmp = mallocz(4096*sizeof(uchar),0);
 	if(tinit == nil || patch == nil || tmp == nil)
@@ -1929,6 +1929,7 @@ compile(Module *m, int size, Modlink *ml)
 		patch[i] = n;
 		n += code - tmp;
 	}
+	patch[size] = n;
 
 	for(i = 0; i < nelem(mactab); i++) {
 		base = code = tmp;
@@ -1991,7 +1992,7 @@ compile(Module *m, int size, Modlink *ml)
 	}
 	patchex(m, patch);
 	m->entry = (Inst*)(base+patch[mod->entry-mod->prog]);
-	free(patch);
+	m->pctab = patch;	/* size+1 offsets: maps code back to Dis pcs, for faults and the debugger */
 	free(tinit);
 	free(tmp);
 	free(m->prog);

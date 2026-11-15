@@ -44,6 +44,8 @@ y.debug
 # emu build artifacts
 /emu/*/*.root.[ch]
 /emu/*/emu.c
+/emu/*/emu-g.c
+/emu/*/o.emu*
 /emu/*/errstr.h
 /emu/*/srv.h
 /emu/*/srvm.h

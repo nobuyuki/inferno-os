@@ -75,8 +75,21 @@ faultpc(void *a)
 	if(m == nil || m == H || !m->compiled || m->m->ncode == 0)
 		return;
 	pc = ((ucontext_t*)a)->uc_mcontext.gregs[16];	/* REG_RIP */
-	if(pc >= (uintptr)m->prog && pc < (uintptr)m->prog+m->m->ncode)
-		R.PC = (Inst*)(pc+1);
+	if(pc >= (uintptr)m->prog && pc < (uintptr)m->prog+m->m->ncode){
+		ulong *tab, off;
+		int i;
+
+		/* the start of the code for the next Dis instruction, if known */
+		tab = m->m->pctab;
+		off = pc - (uintptr)m->prog;
+		if(tab != nil){
+			for(i = 0; i < m->m->nprog && tab[i] <= off; i++)
+				;
+			off = tab[i];
+		}else
+			off++;
+		R.PC = (Inst*)((uintptr)m->prog + off);
+	}
 #else
 	USED(a);
 #endif
