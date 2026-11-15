@@ -1,9 +1,12 @@
 #include	"l.h"
+#pragma push_macro("long")
+#undef long
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/times.h>
 #undef getwd
 #include <unistd.h>	/* For sysconf() and _SC_CLK_TCK */
+#pragma pop_macro("long")
 
 /*
  * fake malloc

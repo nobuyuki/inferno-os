@@ -6,7 +6,7 @@
 #include "uregk.h"
 #include "mach.h"
 
-#define	REGOFF(x)	(ulong)(&((struct Ureg *) 0)->x)
+#define	REGOFF(x)	(ulong)(uintptr)(&((struct Ureg *) 0)->x)
 
 #define R1		REGOFF(u0.r1)
 #define R7		REGOFF(r7)

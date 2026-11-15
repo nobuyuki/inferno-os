@@ -1,15 +1,21 @@
 #include <lib9.h>
 #include <bio.h>
+#pragma push_macro("long")
+#undef long
 #include <sys/types.h>
 #include <termios.h>
 #undef getwd
 #undef getwd
 #include <unistd.h>
+#pragma pop_macro("long")
 #include "mach.h"
 #define	Extern extern
 #include "acid.h"
+#pragma push_macro("long")
+#undef long
 #include <signal.h>
 #include <sys/wait.h>
+#pragma pop_macro("long")
 
 static void
 setraw(int fd, int baud)

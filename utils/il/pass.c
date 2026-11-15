@@ -8,7 +8,7 @@ dodata(void)
 	Prog *p, *p1;
 	long orig, orig1, v;
 	int odd;
-	long long vv;
+	vlong vv;
 
 	if(debug['v'])
 		Bprint(&bso, "%5.2f dodata\n", cputime());

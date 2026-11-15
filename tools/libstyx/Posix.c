@@ -1,13 +1,18 @@
 #define	__EXTENSIONS__
 #define	_BSD_COMPAT
 #include <lib9.h>
+#pragma push_macro("long")
+#undef long
 #include 	<sys/types.h>
 #include	<sys/time.h>
 #include	<sys/socket.h>
 #include	<netinet/in.h>
-
+#pragma pop_macro("long")
 #include "styxserver.h"
 #include "styxaux.h"
+
+/* nothing below uses long, but the system's fd_set macros do, and need its own */
+#undef long
 
 typedef struct Fdset Fdset;
 

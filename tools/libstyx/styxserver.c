@@ -53,7 +53,7 @@ struct Walkqid
 	Qid	qid[1];
 };
 
-#define ASSERT(A,B) styxassert((int)A,B)
+#define ASSERT(A,B) styxassert((A) != 0,B)
 
 static int hash(Path);
 static void deletefids(Client *);
@@ -106,7 +106,7 @@ newclient(Styxserver *server, int fd)
 	Client *c = (Client *)styxmalloc(sizeof(Client));
 
 	if(Debug)
-		fprint(2, "New client at %lux\n", (ulong)c);
+		fprint(2, "New client at %p\n", c);
 	c->server = server;
 	c->fd = fd;
 	c->nread = 0;
@@ -129,7 +129,7 @@ freeclient(Client *c)
 	Styxserver *server;
 
 	if(Debug)
-		fprint(2, "Freeing client at %lux\n", (ulong)c);
+		fprint(2, "Freeing client at %p\n", c);
 	server = c->server;
 	if(server->ops->freeclient)
 		server->ops->freeclient(c);

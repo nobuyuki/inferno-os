@@ -7,7 +7,7 @@
 #include "mach.h"
 
 #define	FPREGBYTES	4
-#define	REGOFF(x)	(ulong)(&((struct Ureg *) 0)->x)
+#define	REGOFF(x)	(ulong)(uintptr)(&((struct Ureg *) 0)->x)
 
 #define SP		REGOFF(u0.sp)
 #define PC		REGOFF(pc)

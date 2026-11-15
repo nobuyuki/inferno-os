@@ -1,8 +1,11 @@
 /* NCR53c8xx assembler */
 %{
 #include <lib9.h>
+#pragma push_macro("long")
+#undef long
 #include <stdio.h>
 #include <ctype.h>
+#pragma pop_macro("long")
 
 #include "na.h"
 
@@ -137,7 +140,7 @@ line:	.label .opcode .comment '\n'
 		if (pass2) {
 			int x;
 			for (x = 0; x < out.len; x++) {
-				printf("/* %.4x */ 0x%.8lxL,",
+				printf("/* %.4x */ 0x%.8xL,",
 				    dot, out.data[x]);
 				if (x == 0) {
 					printf(" /*\t");
@@ -1194,8 +1197,8 @@ fixup(void)
 	int p;
 	printf("struct na_patch na_patches[] = {\n");
 	for (p = 0; p < patches; p++) {
-		printf("\t{ 0x%.4x, %d }, /* %.8lx */\n",
-		    patch[p].lwoff, patch[p].type, patch[p].lwoff * 4L);
+		printf("\t{ 0x%.4x, %d }, /* %.8x */\n",
+		    patch[p].lwoff, patch[p].type, patch[p].lwoff * 4);
 	}
 	if (patches == 0) {
 		printf("\t{ 0, 0 },\n");
@@ -1218,7 +1221,7 @@ fixup(void)
 		printf("\nenum {\n");
 		while (s) {
 			if (s->t == Addr)
-				printf("\tE_%s = %ld,\n", s->name, s->value);
+				printf("\tE_%s = %d,\n", s->name, s->value);
 			s = s->next;
 		}
 		printf("};\n");
@@ -1226,6 +1229,6 @@ fixup(void)
 	/* dump all Consts as #define A_<Name> value */
 	for (s = symlist; s; s = s->next)
 		if (s->t == Const)
-			printf("#define A_%s %ld\n", s->name, s->value);
+			printf("#define A_%s %d\n", s->name, s->value);
 }
 

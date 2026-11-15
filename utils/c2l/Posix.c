@@ -1,5 +1,8 @@
 #include	"cc.h"
+#pragma push_macro("long")
+#undef long
 #include	<sys/wait.h>
+#pragma pop_macro("long")
 
 void*
 mysbrk(ulong size)
