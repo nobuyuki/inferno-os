@@ -24,3 +24,17 @@ install-$SHELLTYPE:V:	disdirs
 
 disdirs:QV:
 	$SHELLNAME $ROOT/mkfiles/mkdisdir $ROOT $DISDIR $ACMEDIR
+
+# Rebuild the distributed object files for 32-bit words ($ROOT/dis and
+# $ROOT/acme), which native kernels and 32-bit hosts use, on a host with
+# longer words.  The object files left in the source directories are for
+# one word size only, hence the cleaning before and after.
+dis32:V:	dis32-$SHELLTYPE
+
+dis32-sh:QV:
+	# a mk that inherits MKFLAGS hands that on, not its own arguments
+	flags="$MKFLAGS DISWORD=32 DISDIR=dis ACMEDIR=acme"
+	unset MKFLAGS
+	mk $flags nuke
+	mk $flags install
+	mk $flags clean

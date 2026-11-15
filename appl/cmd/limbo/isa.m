@@ -179,8 +179,14 @@
 	# add new operators here
 	MAXDIS: con iota;
 
-# XMAGIC, SMAGIC and IBY2WD depend on the size of a word
-# on the machine that will run the object code
+# The magic number of an object file tells the size of a word
+# on the machine that will run it.
+XMAGIC32:	con 819248;	# Normal magic
+SMAGIC32:	con 923426;	# Signed module
+XMAGIC64:	con 819264;	# Normal magic, 64-bit words
+SMAGIC64:	con 923464;	# Signed module, 64-bit words
+
+# HOSTIBY2WD: bytes in a word of the system these programs are built for
 include "wordsize.m";
 
 AMP:		con 16r00;	# Src/Dst op addressing 

@@ -51,7 +51,7 @@ $DEST/%.dis:	%.dis
 %.dis:		$MODULES ${SYSMODULES:%=$ROOT/module/%}
 
 %.dis:	%.b
-	limbo -gw -I$ROOT/module -Ilib -I. -o $stem.dis $stem.b
+	limbo -W $DISWORD -gw -I$ROOT/module -Ilib -I. -o $stem.dis $stem.b
 
 $ENGINES $MAIN $LIB: service.m srvmgr.m proxy.m lib/messages.m
 

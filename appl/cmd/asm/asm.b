@@ -22,6 +22,9 @@ include "arg.m";
 
 include "../limbo/isa.m";
 
+# the assembler writes object files for the system it was built for
+IBY2WD:	con HOSTIBY2WD;
+
 YYSTYPE: adt {
 	inst:	ref Inst;
 	addr:	ref Addr;
@@ -1014,7 +1017,10 @@ assem(i: ref Inst)
 	if(dentry >= dcount)
 		diag("entry descriptor out of range");
 
-	conout(XMAGIC);
+	if(IBY2WD == 4)
+		conout(XMAGIC32);
+	else
+		conout(XMAGIC64);
 	hints := 0;
 	if(mustcompile)
 		hints |= MUSTCOMPILE;

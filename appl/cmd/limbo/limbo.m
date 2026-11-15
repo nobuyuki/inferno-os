@@ -13,10 +13,16 @@ INOOP: con (MAXDIS+2);
 # temporary
 LDT: con 1;
 
-STemp:		con NREG * IBY2WD;
-RTemp:		con STemp + IBY2WD;
-DTemp:		con RTemp + IBY2WD;
-MaxTemp:	con DTemp + IBY2WD;
+# The size of a word in the Dis code being produced is chosen when
+# the compiler runs (-W), not when it is built; setwordsize sets these.
+# The default is the word size of the system the compiler was built for.
+IBY2WD:		int;
+XMAGIC:		int;
+SMAGIC:		int;
+STemp:		int;
+RTemp:		int;
+DTemp:		int;
+MaxTemp:	int;
 MaxReg:		con 1 << 16;
 MaxAlign:	con IBY2LG;
 StrSize:	con 256;

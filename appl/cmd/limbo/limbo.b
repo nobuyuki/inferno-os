@@ -252,8 +252,7 @@ init(nil: ref Draw->Context, argv: list of string)
 		fatal("bad canonical NaN");
 
 	lexinit();
-	typeinit();
-	optabinit();
+	wordsize := HOSTIBY2WD;
 
 	gendis = 1;
 	asmsym = 0;
@@ -351,6 +350,15 @@ init(nil: ref Draw->Context, argv: list of string)
 		'w' =>
 			superwarn = dowarn;
 			dowarn = 1;
+		'W' =>
+			case arg.arg() {
+			"32" =>
+				wordsize = 4;
+			"64" =>
+				wordsize = 8;
+			* =>
+				usage();
+			}
 		'x' =>
 			ext = arg.arg();
 		'X' =>
@@ -363,6 +371,11 @@ init(nil: ref Draw->Context, argv: list of string)
 			usage();
 		}
 	}
+
+	# after the options: the types need the word size
+	setwordsize(wordsize);
+	typeinit();
+	optabinit();
 
 	addinclude("/module");
 
@@ -397,8 +410,24 @@ init(nil: ref Draw->Context, argv: list of string)
 
 usage()
 {
-	fprint(stderr, "usage: limbo [-GSagwe] [-I incdir] [-o outfile] [-{T|t|d} module] [-D debug] file ...\n");
+	fprint(stderr, "usage: limbo [-GSagwe] [-I incdir] [-o outfile] [-{T|t|d} module] [-D debug] [-W 32|64] file ...\n");
 	raise("fail:usage");
+}
+
+setwordsize(n: int)
+{
+	IBY2WD = n;
+	if(n == 4){
+		XMAGIC = XMAGIC32;
+		SMAGIC = SMAGIC32;
+	}else{
+		XMAGIC = XMAGIC64;
+		SMAGIC = SMAGIC64;
+	}
+	STemp = NREG * IBY2WD;
+	RTemp = STemp + IBY2WD;
+	DTemp = RTemp + IBY2WD;
+	MaxTemp = DTemp + IBY2WD;
 }
 
 mkfileext(file, oldext, ext: string): string

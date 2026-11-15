@@ -23,14 +23,11 @@ DISBIN=$ROOT/$DISDIR
 
 <$ROOT/mkfiles/mkdis
 
-# ../limbo/isa.m includes wordsize.m, which ../limbo/mkfile generates;
+# ../limbo/isa.m includes wordsize.m, kept there for each word size;
 # ../limbo also has its own arg.m, so search it last
-LIMBOFLAGS=$LIMBOFLAGS -I../limbo
+LIMBOFLAGS=$LIMBOFLAGS -I../limbo -I../limbo/w$DISWORD
 
-asm.dis:	../limbo/wordsize.m
-
-../limbo/wordsize.m:	$ROOT/mkconfig
-	cd ../limbo; mk wordsize.m
+asm.dis:	../limbo/w$DISWORD/wordsize.m
 
 #asm.b:	asm.y
 #	yacc -D1 -o asm.b asm.y

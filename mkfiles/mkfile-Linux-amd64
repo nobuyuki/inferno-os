@@ -34,3 +34,4 @@ YFLAGS=		-d
 #	Dis object files for 64-bit words are kept apart from the 32-bit ones
 DISDIR=		dis64
 ACMEDIR=	acme64
+DISWORD=	64
